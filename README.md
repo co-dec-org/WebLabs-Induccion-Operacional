@@ -1,5 +1,4 @@
-# DMT Web-Labs
-# Inducción Operacional del Sistema de Monitoreo Telemático
+# DMT Web-Labs | Inducción Operacional del Sistema de Monitoreo Telemático
 
 ## 1. Propósito del proyecto
 
