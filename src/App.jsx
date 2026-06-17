@@ -85,46 +85,97 @@ function LoginPage({ onLogin }) {
 
   return (
     <main className="login-page theme-boldo">
-      <section className="login-hero">
-        <p>Departamento de Monitoreo Telemático</p>
-        <h1>Sistema de Monitoreo Telemático</h1>
-        <h2>Entrenamiento para operadores telemáticos</h2>
-        <div className="login-legal">{legalOperationalText}</div>
+      <header className="login-header">
+        <div className="login-brand">
+          <div className="shield-mark" aria-hidden="true" />
+          <div>
+            <strong>Gendarmería de Chile</strong>
+            <span>Departamento de Monitoreo Telemático</span>
+          </div>
+        </div>
+        <nav aria-label="Ayuda institucional">
+          <span>Centro de Formación y Desarrollo</span>
+          <span>Ayuda</span>
+        </nav>
+      </header>
+
+      <section className="login-content">
+        <form className="login-card" onSubmit={handleSubmit}>
+          <div className="login-card-heading">
+            <div className="shield-mark large" aria-hidden="true" />
+            <p className="section-label">Acceso institucional</p>
+            <h1>Web-Lab de Entrenamiento Operacional S.M.T.</h1>
+            <h2>Sistema de Monitoreo Telemático</h2>
+            <p>Entrenamiento para operadores telemáticos</p>
+          </div>
+
+          <label>
+            Correo institucional
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="usuario@gendarmeria.cl"
+              required
+            />
+          </label>
+
+          <label>
+            Contraseña
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Contraseña enviada al correo institucional"
+            />
+          </label>
+
+          <label className="remember-row">
+            <input type="checkbox" />
+            <span>Recordarme en este dispositivo</span>
+          </label>
+
+          <button type="submit">Ingresar</button>
+          <button type="button" className="forgot-button">
+            ¿Olvidaste tu contraseña?
+          </button>
+          <div className="access-divider"><span>o</span></div>
+          <button type="button" className="disabled-access" disabled>
+            Otro método de acceso
+          </button>
+          <p className="form-status">{status || 'Login fijo en vista Boldo.'}</p>
+        </form>
+
+        <aside className="login-hero">
+          <article>
+            <div className="feature-icon">◎</div>
+            <div>
+              <h3>Acceso a entorno de formación</h3>
+              <p>Plataforma educativa para el desarrollo de competencias operacionales.</p>
+            </div>
+          </article>
+          <article>
+            <div className="feature-icon">▤</div>
+            <div>
+              <h3>Material educativo y lectura guiada</h3>
+              <p>Recursos diseñados para aprendizaje, práctica y toma de decisiones.</p>
+            </div>
+          </article>
+          <div className="document-figure" aria-hidden="true" />
+        </aside>
       </section>
 
-      <form className="login-card" onSubmit={handleSubmit}>
-        <div>
-          <p className="section-label">Acceso institucional</p>
-          <h3>Web-Lab S.M.T.</h3>
-        </div>
-
-        <label>
-          Correo institucional
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="usuario@gendarmeria.cl"
-            required
-          />
-        </label>
-
-        <label>
-          Contraseña
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Contraseña enviada a su correo"
-          />
-        </label>
-
-        <button type="submit">Ingresar</button>
-        <button type="button" className="disabled-access" disabled>
-          Otro método de acceso
-        </button>
-        <p className="form-status">{status || 'Login fijo en vista Boldo.'}</p>
-      </form>
+      <footer className="login-footer">
+        <span>Gendarmería de Chile</span>
+        <span>Departamento de Monitoreo Telemático</span>
+        <span>Ley 21.378</span>
+        <span>Decreto 19</span>
+        <span>Ley 20.066</span>
+        <span>Ley 19.968</span>
+        <span>Ley 20.603</span>
+        <span>Ley 21.719</span>
+      </footer>
+      <div className="login-legal">{legalOperationalText}</div>
     </main>
   );
 }
@@ -157,7 +208,7 @@ function PasswordChangePage({ user, profile, onComplete, onSignOut }) {
   }
 
   return (
-    <main className="login-page theme-boldo">
+    <main className="password-page theme-boldo">
       <section className="login-hero">
         <p>Primer acceso institucional</p>
         <h1>Actualice su contraseña</h1>
@@ -457,6 +508,18 @@ function InduccionPage({ done, setDone }) {
               Siguiente
             </button>
           </div>
+          <nav className="thumbnail-strip" aria-label="Miniaturas de láminas">
+            {modules.map((module) => (
+              <button
+                key={module.number}
+                className={module.number === active ? 'active' : ''}
+                onClick={() => setActive(module.number)}
+              >
+                <img src={slidePath(module.number)} alt="" />
+                <span>{String(module.number).padStart(2, '0')}</span>
+              </button>
+            ))}
+          </nav>
         </article>
 
         <aside className="module-summary">
@@ -473,6 +536,10 @@ function InduccionPage({ done, setDone }) {
             <span>Ley 20.603</span>
             <span>Ley 21.719</span>
           </div>
+          <article className="privacy-card">
+            <span>Nota de privacidad</span>
+            <p>Material educativo. Usar solo casos simulados, anonimizados o autorizados.</p>
+          </article>
         </aside>
       </section>
 
