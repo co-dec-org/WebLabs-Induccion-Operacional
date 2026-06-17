@@ -79,17 +79,7 @@ function getRoute() {
 }
 
 function routeLabel(path) {
-  const labels = {
-    '/home': 'Inicio',
-    '/induccion': 'Inducción Operacional',
-    '/bitacora': 'Bitácora de Entrenamiento',
-    '/marco-legal': 'Marco Legal',
-    '/recursos': 'Recursos',
-    '/perfil': 'Perfil',
-    '/admin-cuentas': 'Cuentas',
-    '/admin-contenidos': 'Editor',
-  };
-  return labels[path] || 'Login';
+  return allNavItems.find((item) => item.path === path)?.label || 'Login';
 }
 
 function slidePath(number) {
@@ -104,6 +94,24 @@ function getUserDisplayName(user, profile) {
 
 function getRole(profile) {
   return ['admin', 'supervisor', 'operador'].includes(profile?.role) ? profile.role : 'operador';
+}
+
+function GendarmeriaLogo({ compact = false }) {
+  return (
+    <div className={compact ? 'gendarmeria-logo compact' : 'gendarmeria-logo'} aria-label="Gendarmería de Chile">
+      <svg viewBox="0 0 72 86" role="img" aria-hidden="true">
+        <path d="M36 4 62 14v22c0 19.7-10.4 35.4-26 45C20.4 71.4 10 55.7 10 36V14L36 4Z" />
+        <path d="M36 14 52 20v16c0 13.7-6.2 24.9-16 32-9.8-7.1-16-18.3-16-32V20l16-6Z" />
+        <path d="M36 24v34M27 33h18M27 43h18" />
+      </svg>
+      {!compact && (
+        <div>
+          <strong>Gendarmería de Chile</strong>
+          <span>Departamento de Monitoreo Telemático</span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function LoginPage({ onLogin }) {
@@ -124,14 +132,8 @@ function LoginPage({ onLogin }) {
   return (
     <main className="login-page theme-boldo">
       <header className="login-header">
-        <div className="login-brand">
-          <div className="institutional-logo" aria-hidden="true"><span className="logo-shield">G</span></div>
-          <div>
-            <strong>Gendarmería de Chile</strong>
-            <span>Departamento de Monitoreo Telemático</span>
-          </div>
-        </div>
-        <nav aria-label="Centro de formación institucional">
+        <GendarmeriaLogo />
+        <nav aria-label="Centro de Formación y Desarrollo">
           <span>Centro de Formación y Desarrollo</span>
         </nav>
       </header>
@@ -139,7 +141,7 @@ function LoginPage({ onLogin }) {
       <section className="login-content">
         <form className="login-card" onSubmit={handleSubmit}>
           <div className="login-card-heading">
-            <div className="institutional-logo large" aria-hidden="true"><span className="logo-shield">G</span></div>
+            <GendarmeriaLogo compact />
             <p className="section-label">Acceso institucional</p>
             <h1>Web-Lab de Entrenamiento Operacional S.M.T.</h1>
             <h2>Sistema de Monitoreo Telemático</h2>
@@ -198,12 +200,13 @@ function LoginPage({ onLogin }) {
               <p>Recursos diseñados para aprendizaje, práctica y toma de decisiones.</p>
             </div>
           </article>
-          <div className="login-legal login-legal-inline">{legalOperationalText}</div>
+          <div className="login-legal right-legal">{legalOperationalText}</div>
           <div className="document-figure" aria-hidden="true" />
         </aside>
       </section>
 
       <footer className="login-footer">
+        <GendarmeriaLogo compact />
         <span>Gendarmería de Chile</span>
         <span>Departamento de Monitoreo Telemático</span>
         <span>Ley 21.378</span>
@@ -328,22 +331,19 @@ function AppShell({
 
         <nav className="primary-nav" aria-label="Navegación principal">
           {visibleNavItems.map((item) => (
-            <React.Fragment key={item.path}>
-              <button
-                className={route === item.path ? 'active' : ''}
-                onClick={() => navigate(item.path)}
-              >
-                <span className="nav-icon">{navIcons[item.path]}</span>
-                {item.label}
-              </button>
-              {item.path === '/induccion' && (
-                <button className="disabled-nav" disabled>
-                  <span className="nav-icon">▷</span>
-                  Simulaciones
-                </button>
-              )}
-            </React.Fragment>
+            <button
+              key={item.path}
+              className={route === item.path ? 'active' : ''}
+              onClick={() => navigate(item.path)}
+            >
+              <span className="nav-icon">{navIcons[item.path]}</span>
+              {item.label}
+            </button>
           ))}
+          <button className="disabled-nav" disabled>
+            <span className="nav-icon">▷</span>
+            Simulaciones
+          </button>
           {role === 'supervisor' && (
             <button className="disabled-nav" disabled>
               <span className="nav-icon">◇</span>
@@ -353,13 +353,9 @@ function AppShell({
         </nav>
 
         <div className="progress-block">
-          <div className="help-block">
+          <div>
             <span>Centro de Formación</span>
             <strong>y Desarrollo</strong>
-          </div>
-          <div className="sidebar-institution">
-            <span>Gendarmería de Chile</span>
-            <small>Departamento de Monitoreo Telemático</small>
           </div>
         </div>
       </aside>
@@ -412,15 +408,6 @@ function AppShell({
   );
 }
 
-function PageTitle({ title }) {
-  return (
-    <header className="page-title">
-      <p>Sistema de Monitoreo Telemático</p>
-      <h2>{title}</h2>
-    </header>
-  );
-}
-
 function HomePage({ navigate }) {
   const learningSteps = [
     ['1', 'Comprender el evento', '70% completado'],
@@ -431,7 +418,6 @@ function HomePage({ navigate }) {
 
   return (
     <section className="home-approved">
-      <PageTitle title="Inicio" />
       <div className="home-top-grid">
         <article className="approved-panel welcome-panel">
           <div className="circle-icon">▱</div>
@@ -653,7 +639,6 @@ function InduccionPage({ done, setDone }) {
 
   return (
     <>
-      <PageTitle title="Inducción Operacional" />
       <section className="induccion-layout">
         <aside className="module-browser">
           <label className="search-box light">
@@ -795,7 +780,6 @@ function BitacoraPage({ notes, reloadNotes }) {
 
   return (
     <section className="bitacora-approved">
-      <PageTitle title="Bitácora de Entrenamiento" />
       <article className="summary-strip">
         <div className="circle-icon">▣</div>
         <div>
@@ -884,7 +868,6 @@ function MarcoLegalPage() {
 
   return (
     <section className="legal-approved">
-      <PageTitle title="Marco Legal" />
       <div className="legal-grid">
         <section>
           <article className="approved-panel legal-hero">
@@ -942,7 +925,6 @@ function RecursosPage() {
 
   return (
     <section className="resources-approved">
-      <PageTitle title="Recursos" />
       <div className="resources-grid">
         <section>
           <article className="approved-panel legal-hero">
@@ -997,7 +979,6 @@ function PerfilPage({ user, profile, deviceType, visualMode }) {
 
   return (
     <section className="profile-approved">
-      <PageTitle title="Perfil" />
       <div className="profile-grid">
         <section>
           <article className="approved-panel profile-card">
@@ -1145,43 +1126,6 @@ function FloatingLog({ route, user, onSaved }) {
   const [note, setNote] = useState('');
   const [evidenceType, setEvidenceType] = useState('Texto');
   const [status, setStatus] = useState('');
-  const [position, setPosition] = useState(null);
-  const dragRef = useMemo(() => ({ current: null }), []);
-
-  function getPanelStyle() {
-    if (!position) return {};
-    return {
-      left: `${position.x}px`,
-      top: `${position.y}px`,
-      right: 'auto',
-      bottom: 'auto',
-    };
-  }
-
-  function beginDrag(event) {
-    if (event.button !== undefined && event.button !== 0) return;
-    const rect = event.currentTarget.closest('.floating-log')?.getBoundingClientRect();
-    if (!rect) return;
-    dragRef.current = {
-      offsetX: event.clientX - rect.left,
-      offsetY: event.clientY - rect.top,
-    };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-  }
-
-  function moveDrag(event) {
-    if (!dragRef.current) return;
-    const width = large ? 440 : 340;
-    const height = open ? (large ? 460 : 360) : 74;
-    const x = Math.min(Math.max(16, event.clientX - dragRef.current.offsetX), window.innerWidth - width - 16);
-    const y = Math.min(Math.max(16, event.clientY - dragRef.current.offsetY), window.innerHeight - height - 16);
-    setPosition({ x, y });
-  }
-
-  function endDrag(event) {
-    dragRef.current = null;
-    event.currentTarget.releasePointerCapture?.(event.pointerId);
-  }
 
   async function handleSave() {
     if (!note.trim()) {
@@ -1207,34 +1151,19 @@ function FloatingLog({ route, user, onSaved }) {
 
   if (!open) {
     return (
-      <aside className="floating-log collapsed" style={getPanelStyle()}>
-        <button
-          className="floating-log-launcher"
-          onClick={() => setOpen(true)}
-          onPointerDown={beginDrag}
-          onPointerMove={moveDrag}
-          onPointerUp={endDrag}
-          onPointerCancel={endDrag}
-          title="Arrastrar para mover. Clic para abrir notas."
-        >
-          Notas
+      <aside className="floating-log collapsed">
+        <button className="floating-log-launcher" onClick={() => setOpen(true)}>
+          Bitácora
         </button>
       </aside>
     );
   }
 
   return (
-    <aside className={`floating-log ${large ? 'large' : 'compact'}`} style={getPanelStyle()}>
-      <header
-        className="floating-log-drag-handle"
-        onPointerDown={beginDrag}
-        onPointerMove={moveDrag}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        title="Arrastrar panel de notas"
-      >
+    <aside className={`floating-log ${large ? 'large' : 'compact'}`}>
+      <header>
         <div>
-          <span>Notas contextuales</span>
+          <span>Bitácora contextual</span>
           <strong>{routeLabel(route)}</strong>
         </div>
         <div className="floating-log-actions">
@@ -1258,7 +1187,7 @@ function FloatingLog({ route, user, onSaved }) {
           placeholder="Registrar observación, duda o criterio de análisis."
         />
       </label>
-      <button className="save-note" onClick={handleSave}>Guardar nota</button>
+      <button className="save-note" onClick={handleSave}>Guardar registro</button>
       <p>{status || 'No ingresar datos reales de víctimas, PSC, domicilios, teléfonos, coordenadas, folios ni causas.'}</p>
     </aside>
   );

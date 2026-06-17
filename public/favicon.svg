@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Web-Lab SMT">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Web-Lab S.M.T.">
   <rect width="64" height="64" rx="14" fill="#003327"/>
-  <path d="M32 8 L48 14 V28 C48 40 41 50 32 56 C23 50 16 40 16 28 V14 Z" fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M32 14 L43 18 V29 C43 37 38 44 32 49 C26 44 21 37 21 29 V18 Z" fill="#0b5b48" opacity="0.9"/>
-  <circle cx="32" cy="31" r="4" fill="#f2b705"/>
+  <path d="M32 7 51 15v16c0 13.9-7.4 24.8-19 31C20.4 55.8 13 44.9 13 31V15L32 7Z" fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M32 18 43 23v9c0 8-4 14.7-11 19.2C25 46.7 21 40 21 32v-9l11-5Z" fill="none" stroke="#dcebe5" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M32 25v19M26 31h12M26 38h12" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>
 </svg>
