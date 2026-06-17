@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { modules, templates } from './data/modules.js';
 import { isSupabaseConfigured } from './lib/supabaseClient.js';
 import {
@@ -760,7 +760,14 @@ function App() {
   });
   const [done, setDone] = useState(() => {
     const saved = localStorage.getItem('dmt-progress');
-    return saved ? JSON.parse(saved) : [];
+    if (!saved) return [];
+
+    try {
+      return JSON.parse(saved);
+    } catch {
+      localStorage.removeItem('dmt-progress');
+      return [];
+    }
   });
 
   const user = session?.user || null;

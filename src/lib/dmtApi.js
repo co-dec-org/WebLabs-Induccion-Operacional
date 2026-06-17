@@ -5,7 +5,14 @@ const LOCAL_USER_KEY = 'dmt-demo-user';
 
 function readLocalNotes() {
   const raw = localStorage.getItem(LOCAL_NOTES_KEY);
-  return raw ? JSON.parse(raw) : [];
+  if (!raw) return [];
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    localStorage.removeItem(LOCAL_NOTES_KEY);
+    return [];
+  }
 }
 
 function writeLocalNotes(notes) {
@@ -15,7 +22,14 @@ function writeLocalNotes(notes) {
 export async function getCurrentSession() {
   if (!supabase) {
     const localUser = localStorage.getItem(LOCAL_USER_KEY);
-    return localUser ? { user: JSON.parse(localUser) } : null;
+    if (!localUser) return null;
+
+    try {
+      return { user: JSON.parse(localUser) };
+    } catch {
+      localStorage.removeItem(LOCAL_USER_KEY);
+      return null;
+    }
   }
 
   const { data } = await supabase.auth.getSession();
