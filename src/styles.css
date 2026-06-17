@@ -2868,3 +2868,31 @@ body {
     display: none !important;
   }
 }
+
+/* QA Visual V6 - Login: criterio legal-operacional en costado derecho */
+.login-page .login-hero .login-legal-inline {
+  position: relative !important;
+  z-index: 3 !important;
+  width: min(540px, calc(100% - 122px)) !important;
+  max-width: 540px !important;
+  margin: -18px 0 0 122px !important;
+  padding: 16px 20px !important;
+  border-left: 4px solid var(--v4-green-900, var(--green-900)) !important;
+  border-radius: 0 8px 8px 0 !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: var(--v4-green-900, var(--green-900)) !important;
+  box-shadow: 0 14px 34px rgba(0, 35, 28, 0.08) !important;
+  font-size: 13.5px !important;
+  font-weight: 760 !important;
+  line-height: 1.42 !important;
+}
+
+.login-page > .login-legal {
+  display: none !important;
+}
+
+@media (max-width: 1200px) {
+  .login-page .login-hero .login-legal-inline {
+    display: none !important;
+  }
+}

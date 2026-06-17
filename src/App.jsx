@@ -198,6 +198,7 @@ function LoginPage({ onLogin }) {
               <p>Recursos diseñados para aprendizaje, práctica y toma de decisiones.</p>
             </div>
           </article>
+          <div className="login-legal login-legal-inline">{legalOperationalText}</div>
           <div className="document-figure" aria-hidden="true" />
         </aside>
       </section>
@@ -212,7 +213,6 @@ function LoginPage({ onLogin }) {
         <span>Ley 20.603</span>
         <span>Ley 21.719</span>
       </footer>
-      <div className="login-legal">{legalOperationalText}</div>
     </main>
   );
 }
