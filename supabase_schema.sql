@@ -1,10 +1,10 @@
--- DMT Web-Labs - Induccion Operacional Sistema de Monitoreo Telematico
+-- DMT Web-Labs - Inducción Operacional del Sistema de Monitoreo Telemático
 -- Esquema inicial Supabase/Postgres
--- Nota: no almacenar datos personales reales de victimas, PSC ni causas judiciales en V1.
+-- Nota: no almacenar datos personales reales de víctimas, PSC ni causas judiciales en V1.
 
 create extension if not exists "pgcrypto";
 
-create type public.app_role as enum ('admin', 'supervisor', 'operador', 'lector');
+create type public.app_role as enum ('admin', 'supervisor', 'operador');
 create type public.module_status as enum ('draft', 'published', 'archived');
 create type public.progress_status as enum ('not_started', 'in_progress', 'completed');
 create type public.training_note_status as enum ('draft', 'submitted', 'reviewed', 'archived');
@@ -13,10 +13,23 @@ create type public.training_evidence_type as enum ('image', 'attachment', 'audio
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text not null,
+  department text not null default 'Departamento de Monitoreo Telemático',
   role public.app_role not null default 'operador',
+  must_change_password boolean not null default true,
+  password_changed_at timestamptz,
   active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+create table public.user_visual_preferences (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  device_type text not null check (device_type in ('desktop', 'tablet', 'phone')),
+  visual_mode text not null check (visual_mode in ('boldo', 'ambar')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, device_type)
 );
 
 create table public.modules (
@@ -59,6 +72,18 @@ create table public.notes (
   title text,
   body text not null,
   is_shared boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table public.contextual_notes (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  page text not null,
+  context_label text,
+  note text not null check (char_length(note) <= 1000),
+  evidence_type text not null default 'Texto',
+  status public.training_note_status not null default 'draft',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -145,10 +170,12 @@ values (
 ) on conflict (id) do nothing;
 
 alter table public.profiles enable row level security;
+alter table public.user_visual_preferences enable row level security;
 alter table public.modules enable row level security;
 alter table public.module_sections enable row level security;
 alter table public.progress enable row level security;
 alter table public.notes enable row level security;
+alter table public.contextual_notes enable row level security;
 alter table public.training_notes enable row level security;
 alter table public.training_attachments enable row level security;
 alter table public.templates enable row level security;
@@ -162,6 +189,24 @@ as $$
   select role from public.profiles where id = auth.uid()
 $$;
 
+create or replace function public.complete_initial_password_change()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.profiles
+  set
+    must_change_password = false,
+    password_changed_at = now(),
+    updated_at = now()
+  where id = auth.uid();
+end;
+$$;
+
+grant execute on function public.complete_initial_password_change() to authenticated;
+
 create policy "profiles_select_own_or_admin"
 on public.profiles for select
 using (id = auth.uid() or public.app_current_role() in ('admin', 'supervisor'));
@@ -170,6 +215,23 @@ create policy "profiles_admin_write"
 on public.profiles for update
 using (public.app_current_role() = 'admin')
 with check (public.app_current_role() = 'admin');
+
+create policy "profiles_admin_insert"
+on public.profiles for insert
+with check (public.app_current_role() = 'admin');
+
+create policy "visual_preferences_select_own_or_admin"
+on public.user_visual_preferences for select
+using (user_id = auth.uid() or public.app_current_role() = 'admin');
+
+create policy "visual_preferences_upsert_own"
+on public.user_visual_preferences for insert
+with check (user_id = auth.uid());
+
+create policy "visual_preferences_update_own"
+on public.user_visual_preferences for update
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
 
 create policy "modules_select_published"
 on public.modules for select
@@ -219,6 +281,19 @@ with check (user_id = auth.uid());
 create policy "notes_update_own"
 on public.notes for update
 using (user_id = auth.uid())
+with check (user_id = auth.uid());
+
+create policy "contextual_notes_select_own_or_supervisor"
+on public.contextual_notes for select
+using (user_id = auth.uid() or public.app_current_role() in ('admin', 'supervisor'));
+
+create policy "contextual_notes_insert_own"
+on public.contextual_notes for insert
+with check (user_id = auth.uid());
+
+create policy "contextual_notes_update_own_draft"
+on public.contextual_notes for update
+using (user_id = auth.uid() and status in ('draft', 'submitted'))
 with check (user_id = auth.uid());
 
 create policy "training_notes_select_own_or_supervisor"

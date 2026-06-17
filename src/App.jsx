@@ -9,22 +9,35 @@ import {
   saveVisualPreference,
   signInWithInstitutionalEmail,
   signOut,
+  updateInitialPassword,
 } from './lib/dmtApi.js';
 
-const navItems = [
+const baseNavItems = [
   { path: '/home', label: 'Home' },
-  { path: '/induccion', label: 'Induccion' },
-  { path: '/bitacora', label: 'Bitacora' },
+  { path: '/induccion', label: 'Inducción' },
+  { path: '/bitacora', label: 'Bitácora' },
   { path: '/marco-legal', label: 'Marco legal' },
   { path: '/recursos', label: 'Recursos' },
   { path: '/perfil', label: 'Perfil' },
 ];
 
+const adminNavItems = [
+  { path: '/admin-cuentas', label: 'Cuentas' },
+  { path: '/admin-contenidos', label: 'Editor' },
+];
+
+const allNavItems = [...baseNavItems, ...adminNavItems];
+
 const legalOperationalText =
-  'Criterio legal-operacional: antes de produccion se debe asegurar RLS, minimo dato personal y prohibicion de registrar datos reales de victimas, PSC, domicilios, telefonos, coordenadas, folios o causas, conforme Ley 21.719 y marco de monitoreo telematico.';
+  'Criterio legal-operacional: antes de producción se debe asegurar RLS, mínimo dato personal y prohibición de registrar datos reales de víctimas, PSC, domicilios, teléfonos, coordenadas, folios o causas, conforme Ley 21.719 y marco de monitoreo telemático.';
 
 const evidenceTypes = ['Texto', 'Captura', 'Audio', 'Video', 'Adjunto'];
 const deviceLabels = { desktop: 'Desktop', tablet: 'Tablet', phone: 'Phone' };
+const roleLabels = {
+  admin: 'Admin',
+  supervisor: 'Supervisor',
+  operador: 'Operador',
+};
 
 function getDeviceType() {
   if (window.innerWidth < 768) return 'phone';
@@ -38,7 +51,7 @@ function getRoute() {
 }
 
 function routeLabel(path) {
-  return navItems.find((item) => item.path === path)?.label || 'Login';
+  return allNavItems.find((item) => item.path === path)?.label || 'Login';
 }
 
 function slidePath(number) {
@@ -48,7 +61,11 @@ function slidePath(number) {
 function getUserDisplayName(user, profile) {
   if (profile?.full_name) return profile.full_name;
   if (user?.user_metadata?.full_name) return user.user_metadata.full_name;
-  return 'Juan Gonzalez Tapia';
+  return 'Juan González Tapia';
+}
+
+function getRole(profile) {
+  return ['admin', 'supervisor', 'operador'].includes(profile?.role) ? profile.role : 'operador';
 }
 
 function LoginPage({ onLogin }) {
@@ -62,16 +79,16 @@ function LoginPage({ onLogin }) {
     try {
       await onLogin(email, password);
     } catch (error) {
-      setStatus(error.message || 'No fue posible iniciar sesion.');
+      setStatus(error.message || 'No fue posible iniciar sesión.');
     }
   }
 
   return (
     <main className="login-page theme-boldo">
       <section className="login-hero">
-        <p>Departamento de Monitoreo Telematico</p>
-        <h1>Sistema de Monitoreo Telematico</h1>
-        <h2>Entrenamiento para operadores telematicos</h2>
+        <p>Departamento de Monitoreo Telemático</p>
+        <h1>Sistema de Monitoreo Telemático</h1>
+        <h2>Entrenamiento para operadores telemáticos</h2>
         <div className="login-legal">{legalOperationalText}</div>
       </section>
 
@@ -93,20 +110,98 @@ function LoginPage({ onLogin }) {
         </label>
 
         <label>
-          Contrasena
+          Contraseña
           <input
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="Contrasena enviada a su correo"
+            placeholder="Contraseña enviada a su correo"
           />
         </label>
 
         <button type="submit">Ingresar</button>
         <button type="button" className="disabled-access" disabled>
-          Otro metodo de acceso
+          Otro método de acceso
         </button>
         <p className="form-status">{status || 'Login fijo en vista Boldo.'}</p>
+      </form>
+    </main>
+  );
+}
+
+function PasswordChangePage({ user, profile, onComplete, onSignOut }) {
+  const [password, setPassword] = useState('');
+  const [confirmation, setConfirmation] = useState('');
+  const [status, setStatus] = useState('');
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    if (password.length < 10) {
+      setStatus('La nueva contraseña debe tener al menos 10 caracteres.');
+      return;
+    }
+
+    if (password !== confirmation) {
+      setStatus('Las contraseñas ingresadas no coinciden.');
+      return;
+    }
+
+    try {
+      setStatus('Actualizando contraseña...');
+      await updateInitialPassword(password);
+      onComplete();
+    } catch (error) {
+      setStatus(error.message || 'No fue posible actualizar la contraseña.');
+    }
+  }
+
+  return (
+    <main className="login-page theme-boldo">
+      <section className="login-hero">
+        <p>Primer acceso institucional</p>
+        <h1>Actualice su contraseña</h1>
+        <h2>Antes de ingresar al Home, debe definir una contraseña personal.</h2>
+        <div className="login-legal">
+          Por seguridad, la clave inicial solo habilita el primer acceso. Después del cambio,
+          el usuario ingresa con su contraseña personal. No registre claves en Bitácora ni en
+          notas de entrenamiento.
+        </div>
+      </section>
+
+      <form className="login-card" onSubmit={handleSubmit}>
+        <div>
+          <p className="section-label">Cambio obligatorio</p>
+          <h3>{getUserDisplayName(user, profile)}</h3>
+        </div>
+
+        <label>
+          Nueva contraseña
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Mínimo 10 caracteres"
+            required
+          />
+        </label>
+
+        <label>
+          Confirmar contraseña
+          <input
+            type="password"
+            value={confirmation}
+            onChange={(event) => setConfirmation(event.target.value)}
+            placeholder="Repita la nueva contraseña"
+            required
+          />
+        </label>
+
+        <button type="submit">Guardar nueva contraseña</button>
+        <button type="button" className="disabled-access" onClick={onSignOut}>
+          Salir
+        </button>
+        <p className="form-status">{status || 'Esta capa aparece solo en el primer acceso.'}</p>
       </form>
     </main>
   );
@@ -124,6 +219,8 @@ function AppShell({
   children,
 }) {
   const displayName = getUserDisplayName(user, profile);
+  const role = getRole(profile);
+  const visibleNavItems = role === 'admin' ? [...baseNavItems, ...adminNavItems] : baseNavItems;
 
   return (
     <main className={`app-shell theme-${visualMode}`}>
@@ -131,13 +228,13 @@ function AppShell({
         <div className="brand-block">
           <div className="crest">G</div>
           <div>
-            <p>Departamento de Monitoreo Telematico</p>
+            <p>Departamento de Monitoreo Telemático</p>
             <h1>Web-Lab S.M.T.</h1>
           </div>
         </div>
 
-        <nav className="primary-nav" aria-label="Navegacion principal">
-          {navItems.map((item) => (
+        <nav className="primary-nav" aria-label="Navegación principal">
+          {visibleNavItems.map((item) => (
             <button
               key={item.path}
               className={route === item.path ? 'active' : ''}
@@ -149,6 +246,11 @@ function AppShell({
           <button className="disabled-nav" disabled>
             Simulaciones
           </button>
+          {role === 'supervisor' && (
+            <button className="disabled-nav" disabled>
+              Equipo
+            </button>
+          )}
         </nav>
 
         <div className="progress-block">
@@ -156,14 +258,14 @@ function AppShell({
             <span>Supabase</span>
             <strong>{isSupabaseConfigured ? 'OK' : 'Local'}</strong>
           </div>
-          <p>Ambiente V1 con resguardo de datos y bitacora contextual.</p>
+          <p>Ambiente V1 con resguardo de datos y bitácora contextual.</p>
         </div>
       </aside>
 
       <section className="workspace">
         <header className="top-bar">
           <div>
-            <p>Sistema de Monitoreo Telematico</p>
+            <p>Sistema de Monitoreo Telemático</p>
             <h2>{routeLabel(route)}</h2>
           </div>
 
@@ -179,11 +281,11 @@ function AppShell({
               className={visualMode === 'ambar' ? 'active' : ''}
               onClick={() => updateVisualMode('ambar')}
             >
-              Ambar
+              Ámbar
             </button>
           </div>
 
-          <div className="user-chip">{displayName}</div>
+          <div className="user-chip">{displayName} · {roleLabels[role]}</div>
           <button className="ghost-button" onClick={onSignOut}>
             Salir
           </button>
@@ -200,13 +302,13 @@ function HomePage({ navigate }) {
     <section className="page-grid">
       <article className="hero-panel">
         <p className="section-label">Onboarding operativo</p>
-        <h3>Entrenamiento del operador telematico</h3>
+        <h3>Entrenamiento del operador telemático</h3>
         <p>
-          La web-lab organiza lectura, avance y bitacora contextual para entrenar criterio
+          La web-lab organiza lectura, avance y bitácora contextual para entrenar criterio
           operativo sin registrar datos sensibles reales.
         </p>
         <div className="action-row">
-          <button onClick={() => navigate('/induccion')}>Continuar induccion</button>
+          <button onClick={() => navigate('/induccion')}>Continuar inducción</button>
           <button className="secondary" onClick={() => navigate('/marco-legal')}>
             Revisar marco legal
           </button>
@@ -215,20 +317,69 @@ function HomePage({ navigate }) {
 
       <article className="status-card">
         <span>14</span>
-        <strong>Laminas disponibles</strong>
-        <p>Contenido aprobado para lectura web y modo presentacion.</p>
+        <strong>Láminas disponibles</strong>
+        <p>Contenido aprobado para lectura web y modo presentación.</p>
       </article>
       <article className="status-card">
         <span>Global</span>
-        <strong>Bitacora contextual</strong>
-        <p>Registra notas segun pagina, modulo o lamina.</p>
+        <strong>Bitácora contextual</strong>
+        <p>Registra notas según página, módulo o lámina.</p>
       </article>
       <article className="status-card disabled-card">
         <span>Inhabilitado</span>
         <strong>Simulaciones</strong>
-        <p>Modulo reservado para una etapa posterior.</p>
+        <p>Módulo reservado para una etapa posterior.</p>
       </article>
     </section>
+  );
+}
+
+function ProfileValidationPage({ visualMode, deviceType }) {
+  return (
+    <main className={`app-shell theme-${visualMode} validation-shell`}>
+      <aside className="side-nav" aria-hidden="true">
+        <div className="brand-block">
+          <div className="crest">G</div>
+          <div>
+            <p>Departamento de Monitoreo Telemático</p>
+            <h1>Web-Lab S.M.T.</h1>
+          </div>
+        </div>
+
+        <nav className="primary-nav">
+          {baseNavItems.map((item) => (
+            <button key={item.path} className={item.path === '/home' ? 'active' : ''}>
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </aside>
+
+      <section className="workspace">
+        <header className="top-bar" aria-hidden="true">
+          <div>
+            <p>Sistema de Monitoreo Telemático</p>
+            <h2>Home</h2>
+          </div>
+          <div className="view-switch">
+            <span>{deviceLabels[deviceType]}</span>
+            <button className={visualMode === 'boldo' ? 'active' : ''}>Boldo</button>
+            <button className={visualMode === 'ambar' ? 'active' : ''}>Ámbar</button>
+          </div>
+          <div className="user-chip">Validando usuario</div>
+        </header>
+
+        <div className="validation-home-backdrop" aria-hidden="true">
+          <HomePage navigate={() => {}} />
+        </div>
+
+        <section className="validation-overlay" role="status" aria-live="polite">
+          <p className="section-label">Acceso institucional</p>
+          <h3>Validando perfil</h3>
+          <p>Estamos verificando rol y estado de primer acceso antes de entrar al Home.</p>
+        </section>
+      </section>
+    </main>
   );
 }
 
@@ -262,14 +413,14 @@ function InduccionPage({ done, setDone }) {
       <section className="induccion-layout">
         <aside className="module-browser">
           <label className="search-box light">
-            Buscar lamina
+            Buscar lámina
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Concepto o modulo"
+              placeholder="Concepto o módulo"
             />
           </label>
-          <nav className="module-list" aria-label="Modulos de induccion">
+          <nav className="module-list" aria-label="Módulos de inducción">
             {filteredModules.map((module) => (
               <button
                 key={module.number}
@@ -285,14 +436,14 @@ function InduccionPage({ done, setDone }) {
 
         <article className="deck-stage">
           <div className="deck-toolbar">
-            <span>Lamina {String(activeModule.number).padStart(2, '0')} de 14</span>
+            <span>Lámina {String(activeModule.number).padStart(2, '0')} de 14</span>
             <strong>{activeModule.title}</strong>
             <button className="presentation-button" onClick={() => setIsPresentationOpen(true)}>
-              Modo presentacion
+              Modo presentación
             </button>
           </div>
           <figure className="slide-frame deck-slide">
-            <img src={slidePath(activeModule.number)} alt={`Lamina ${activeModule.number}`} />
+            <img src={slidePath(activeModule.number)} alt={`Lámina ${activeModule.number}`} />
           </figure>
           <div className="deck-controls">
             <button onClick={() => setActive(Math.max(1, active - 1))}>Anterior</button>
@@ -300,7 +451,7 @@ function InduccionPage({ done, setDone }) {
               className={done.includes(activeModule.number) ? 'done-button complete' : 'done-button'}
               onClick={() => toggleDone(activeModule.number)}
             >
-              {done.includes(activeModule.number) ? 'Lamina revisada' : 'Marcar revisada'}
+              {done.includes(activeModule.number) ? 'Lámina revisada' : 'Marcar revisada'}
             </button>
             <button onClick={() => setActive(Math.min(modules.length, active + 1))}>
               Siguiente
@@ -309,7 +460,7 @@ function InduccionPage({ done, setDone }) {
         </article>
 
         <aside className="module-summary">
-          <p className="section-label">Modulo {activeModule.number}/14</p>
+          <p className="section-label">Módulo {activeModule.number}/14</p>
           <h3>{activeModule.title}</h3>
           <p className="subtitle">{activeModule.subtitle}</p>
           <p>{activeModule.objective}</p>
@@ -329,13 +480,13 @@ function InduccionPage({ done, setDone }) {
         <section className="presentation-overlay">
           <header>
             <div>
-              <span>Lamina {String(activeModule.number).padStart(2, '0')} de 14</span>
+              <span>Lámina {String(activeModule.number).padStart(2, '0')} de 14</span>
               <strong>{activeModule.title}</strong>
             </div>
             <button onClick={() => setIsPresentationOpen(false)}>Salir</button>
           </header>
           <figure>
-            <img src={slidePath(activeModule.number)} alt={`Lamina ${activeModule.number}`} />
+            <img src={slidePath(activeModule.number)} alt={`Lámina ${activeModule.number}`} />
           </figure>
           <footer>
             <button onClick={() => setActive(Math.max(1, active - 1))}>Anterior</button>
@@ -353,18 +504,18 @@ function BitacoraPage({ notes, reloadNotes }) {
   return (
     <section className="page-grid two-columns">
       <article className="hero-panel">
-        <p className="section-label">Bitacora de entrenamiento</p>
+        <p className="section-label">Bitácora de entrenamiento</p>
         <h3>Registros hechos desde la web</h3>
         <p>
-          Consolida notas creadas desde capacitaciones, induccion y el resto de la web para
-          facilitar analisis posterior.
+          Consolida notas creadas desde capacitaciones, inducción y el resto de la web para
+          facilitar análisis posterior.
         </p>
         <button onClick={reloadNotes}>Actualizar registros</button>
       </article>
 
       <section className="log-list-panel">
         {notes.length === 0 ? (
-          <p className="empty-state">Sin registros aun.</p>
+          <p className="empty-state">Sin registros aún.</p>
         ) : (
           notes.map((note) => (
             <article key={note.id}>
@@ -381,12 +532,12 @@ function BitacoraPage({ notes, reloadNotes }) {
 
 function MarcoLegalPage() {
   const laws = [
-    ['Ley 21.378', 'Establece monitoreo telematico en Ley 20.066 y Ley 19.968.'],
-    ['Decreto 19', 'Reglamento aplicable al monitoreo telematico en VIF y familia.'],
+    ['Ley 21.378', 'Establece monitoreo telemático en Ley 20.066 y Ley 19.968.'],
+    ['Decreto 19', 'Reglamento aplicable al monitoreo telemático en VIF y familia.'],
     ['Ley 20.066', 'Marco para prevenir, sancionar y erradicar violencia intrafamiliar.'],
-    ['Ley 19.968', 'Tribunales de Familia, medidas cautelares y tramitacion.'],
-    ['Ley 20.603', 'Sistema de penas sustitutivas y control telematico penal.'],
-    ['Ley 21.719', 'Proteccion de datos personales y minimizacion de tratamiento.'],
+    ['Ley 19.968', 'Tribunales de Familia, medidas cautelares y tramitación.'],
+    ['Ley 20.603', 'Sistema de penas sustitutivas y control telemático penal.'],
+    ['Ley 21.719', 'Protección de datos personales y minimización de tratamiento.'],
   ];
 
   return (
@@ -412,7 +563,7 @@ function RecursosPage() {
       <article className="hero-panel">
         <p className="section-label">Recursos</p>
         <h3>Material de apoyo del operador</h3>
-        <p>Laminas, plantillas de texto y criterios de uso para entrenamiento.</p>
+        <p>Láminas, plantillas de texto y criterios de uso para entrenamiento.</p>
       </article>
       <section className="resource-list">
         {templates.map((template) => (
@@ -428,6 +579,8 @@ function RecursosPage() {
 }
 
 function PerfilPage({ user, profile, deviceType, visualMode }) {
+  const role = getRole(profile);
+
   return (
     <section className="page-grid two-columns">
       <article className="hero-panel">
@@ -437,15 +590,85 @@ function PerfilPage({ user, profile, deviceType, visualMode }) {
       </article>
       <article className="status-card">
         <span>Departamento</span>
-        <strong>{profile?.department || 'Departamento de Monitoreo Telematico'}</strong>
+        <strong>{profile?.department || 'Departamento de Monitoreo Telemático'}</strong>
       </article>
       <article className="status-card">
         <span>Rol V1</span>
-        <strong>{profile?.role || 'Operador / Entrenamiento'}</strong>
+        <strong>{roleLabels[role]}</strong>
       </article>
       <article className="status-card">
         <span>Preferencia visual</span>
         <strong>{deviceLabels[deviceType]} · {visualMode}</strong>
+      </article>
+    </section>
+  );
+}
+
+function AdminAccountsPage() {
+  return (
+    <section className="page-grid">
+      <article className="hero-panel">
+        <p className="section-label">Admin · Cuentas</p>
+        <h3>Administración de accesos</h3>
+        <p>
+          Módulo reservado para enrolamiento, actualización de perfiles y solicitudes de reset
+          de acceso institucional.
+        </p>
+      </article>
+      <article className="status-card">
+        <span>Perfiles V1</span>
+        <strong>Admin · Supervisor · Operador</strong>
+        <p>Los permisos se aplican mediante Supabase Auth, perfiles y RLS.</p>
+      </article>
+      <article className="status-card">
+        <span>Reset de acceso</span>
+        <strong>Requiere flujo seguro</strong>
+        <p>
+          No se debe exponer `service_role` en el frontend. El reset debe ejecutarse desde
+          Supabase Dashboard o desde una función backend protegida.
+        </p>
+      </article>
+      <article className="status-card">
+        <span>Dato mínimo</span>
+        <strong>Correo institucional y rol</strong>
+        <p>No registrar datos reales de víctimas, PSC, causas, folios ni ubicaciones.</p>
+      </article>
+    </section>
+  );
+}
+
+function AdminContentPage() {
+  return (
+    <section className="page-grid two-columns">
+      <article className="hero-panel">
+        <p className="section-label">Admin · Editor</p>
+        <h3>Textos de láminas</h3>
+        <p>
+          Módulo para revisar y actualizar textos pedagógicos asociados a cada lámina. Las
+          imágenes aprobadas se mantienen como fuente visual; los textos editables viven en
+          Supabase.
+        </p>
+      </article>
+      <section className="resource-list">
+        {modules.map((module) => (
+          <article key={module.number}>
+            <span>Lámina {String(module.number).padStart(2, '0')}</span>
+            <strong>{module.title}</strong>
+            <p>{module.objective}</p>
+          </article>
+        ))}
+      </section>
+    </section>
+  );
+}
+
+function RestrictedPage() {
+  return (
+    <section className="page-grid">
+      <article className="hero-panel">
+        <p className="section-label">Acceso restringido</p>
+        <h3>Módulo no disponible para este perfil</h3>
+        <p>La visualización de este módulo depende del rol asignado en Supabase.</p>
       </article>
     </section>
   );
@@ -484,7 +707,7 @@ function FloatingLog({ route, user, onSaved }) {
     return (
       <aside className="floating-log collapsed">
         <button className="floating-log-launcher" onClick={() => setOpen(true)}>
-          Bitacora
+          Bitácora
         </button>
       </aside>
     );
@@ -494,7 +717,7 @@ function FloatingLog({ route, user, onSaved }) {
     <aside className={`floating-log ${large ? 'large' : 'compact'}`}>
       <header>
         <div>
-          <span>Bitacora contextual</span>
+          <span>Bitácora contextual</span>
           <strong>{routeLabel(route)}</strong>
         </div>
         <div className="floating-log-actions">
@@ -515,11 +738,11 @@ function FloatingLog({ route, user, onSaved }) {
         <textarea
           value={note}
           onChange={(event) => setNote(event.target.value)}
-          placeholder="Registrar observacion, duda o criterio de analisis."
+          placeholder="Registrar observación, duda o criterio de análisis."
         />
       </label>
       <button className="save-note" onClick={handleSave}>Guardar registro</button>
-      <p>{status || 'No ingresar datos reales de victimas, PSC, domicilios, telefonos, coordenadas, folios ni causas.'}</p>
+      <p>{status || 'No ingresar datos reales de víctimas, PSC, domicilios, teléfonos, coordenadas, folios ni causas.'}</p>
     </aside>
   );
 }
@@ -528,6 +751,7 @@ function App() {
   const [route, setRoute] = useState(getRoute);
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [notes, setNotes] = useState([]);
   const [deviceType] = useState(getDeviceType);
   const [visualMode, setVisualMode] = useState(() => {
@@ -540,6 +764,7 @@ function App() {
   });
 
   const user = session?.user || null;
+  const role = getRole(profile);
 
   useEffect(() => {
     getCurrentSession().then(setSession);
@@ -554,8 +779,16 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!user?.id) return;
-    getProfile(user.id).then(setProfile).catch(() => setProfile(null));
+    if (!user?.id) {
+      setProfileLoaded(true);
+      return;
+    }
+
+    setProfileLoaded(false);
+    getProfile(user.id)
+      .then(setProfile)
+      .catch(() => setProfile(null))
+      .finally(() => setProfileLoaded(true));
     listContextualNotes(user.id).then(setNotes).catch(() => setNotes([]));
   }, [user?.id]);
 
@@ -567,6 +800,13 @@ function App() {
   async function handleLogin(email, password) {
     const nextSession = await signInWithInstitutionalEmail(email, password);
     setSession(nextSession);
+    if (nextSession?.user?.id) {
+      setProfileLoaded(false);
+      getProfile(nextSession.user.id)
+        .then(setProfile)
+        .catch(() => setProfile(null))
+        .finally(() => setProfileLoaded(true));
+    }
     navigate('/home');
   }
 
@@ -574,6 +814,7 @@ function App() {
     await signOut();
     setSession(null);
     setProfile(null);
+    setProfileLoaded(false);
     navigate('/login');
   }
 
@@ -591,6 +832,24 @@ function App() {
     return <LoginPage onLogin={handleLogin} />;
   }
 
+  if (!profileLoaded) {
+    return <ProfileValidationPage visualMode={visualMode} deviceType={deviceType} />;
+  }
+
+  if (profile?.must_change_password) {
+    return (
+      <PasswordChangePage
+        user={user}
+        profile={profile}
+        onSignOut={handleSignOut}
+        onComplete={() => {
+          setProfile({ ...profile, must_change_password: false });
+          navigate('/home');
+        }}
+      />
+    );
+  }
+
   let page = <HomePage navigate={navigate} />;
   if (route === '/induccion') page = <InduccionPage done={done} setDone={setDone} />;
   if (route === '/bitacora') page = <BitacoraPage notes={notes} reloadNotes={reloadNotes} />;
@@ -605,6 +864,12 @@ function App() {
         visualMode={visualMode}
       />
     );
+  }
+  if (route === '/admin-cuentas') {
+    page = role === 'admin' ? <AdminAccountsPage /> : <RestrictedPage />;
+  }
+  if (route === '/admin-contenidos') {
+    page = role === 'admin' ? <AdminContentPage /> : <RestrictedPage />;
   }
 
   return (

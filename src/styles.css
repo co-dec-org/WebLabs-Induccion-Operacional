@@ -483,6 +483,58 @@ button:disabled {
   line-height: 1.45;
 }
 
+.validation-shell {
+  position: relative;
+  overflow: hidden;
+}
+
+.validation-shell .side-nav,
+.validation-shell .top-bar,
+.validation-home-backdrop {
+  filter: blur(8px);
+  opacity: 0.58;
+  pointer-events: none;
+  user-select: none;
+}
+
+.validation-shell::after {
+  position: fixed;
+  z-index: 8;
+  inset: 0;
+  background: rgba(245, 248, 246, 0.34);
+  content: "";
+  pointer-events: none;
+}
+
+.validation-overlay {
+  position: fixed;
+  z-index: 9;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: min(520px, calc(100vw - 36px));
+  gap: 12px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.94);
+  box-shadow: 0 26px 80px rgba(0, 29, 22, 0.2);
+  padding: 26px;
+}
+
+.validation-overlay h3 {
+  margin: 0;
+  color: var(--green-900);
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1;
+}
+
+.validation-overlay p:last-child {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .disabled-card {
   opacity: 0.55;
   filter: grayscale(0.55);

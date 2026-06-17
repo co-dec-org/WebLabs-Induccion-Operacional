@@ -1,10 +1,10 @@
-# Guia breve de despliegue
+# Guía breve de despliegue
 
 ## GitHub
 
 1. Crear repositorio `dmt-weblabs-induccion`.
-2. Subir esta carpeta como raiz del proyecto.
-3. Mantener `README.md`, `supabase_schema.sql` y `seed_modules.sql` como documentacion tecnica inicial.
+2. Subir esta carpeta como raíz del proyecto.
+3. Mantener `README.md`, `supabase_schema.sql` y `seed_modules.sql` como documentación técnica inicial.
 
 ## Supabase
 
@@ -14,6 +14,19 @@
 4. Crear usuarios autorizados desde Auth.
 5. Asignar roles en `profiles`.
 6. Verificar bucket privado `training-evidence`.
+
+Si la base ya fue creada antes del flujo de clave inicial, ejecutar además:
+
+```txt
+supabase/004_initial_password_flow.sql
+```
+
+Para enrolamiento inicial:
+
+- Crear cada usuario en Supabase Auth con correo institucional y clave inicial.
+- Crear su fila en `profiles` con rol `admin`, `supervisor` u `operador`.
+- Mantener `must_change_password = true` hasta que el usuario cambie su contraseña.
+- No subir planillas de usuarios ni claves iniciales al repositorio.
 
 ## Vercel
 
@@ -31,13 +44,13 @@ npm install
 npm run dev
 ```
 
-La capa oficial es React/Vite. Supabase queda preparado por esquema SQL y variables de entorno; la integracion directa con cliente Supabase se realiza en el Sprint 2.
+La capa oficial es React/Vite. Supabase se integra mediante variables de entorno y cliente Supabase desde React.
 
 ## Criterio de seguridad V1
 
-No subir datos reales de victimas, PSC, causas, telefonos, domicilios, coordenadas ni capturas operacionales identificables.
+No subir datos reales de víctimas, PSC, causas, teléfonos, domicilios, coordenadas ni capturas operacionales identificables.
 
-La Bitacora S.M.T. debe operar solo con material simulado, anonimizado o autorizado. Limites recomendados:
+La Bitácora S.M.T. debe operar solo con material simulado, anonimizado o autorizado. Límites recomendados:
 
 - Captura de pantalla: 5 MB.
 - Adjunto: 10 MB.

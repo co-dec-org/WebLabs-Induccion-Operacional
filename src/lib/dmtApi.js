@@ -47,6 +47,23 @@ export async function signOut() {
   if (supabase) await supabase.auth.signOut();
 }
 
+export async function updateInitialPassword(newPassword) {
+  if (!supabase) {
+    return { ok: true };
+  }
+
+  const { error: passwordError } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+
+  if (passwordError) throw passwordError;
+
+  const { error: profileError } = await supabase.rpc('complete_initial_password_change');
+
+  if (profileError) throw profileError;
+  return { ok: true };
+}
+
 export async function getProfile(userId) {
   if (!supabase || !userId) return null;
 
