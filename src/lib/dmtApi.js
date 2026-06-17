@@ -1,0 +1,136 @@
+import { supabase } from './supabaseClient.js';
+
+const LOCAL_NOTES_KEY = 'dmt-contextual-notes';
+const LOCAL_USER_KEY = 'dmt-demo-user';
+
+function readLocalNotes() {
+  const raw = localStorage.getItem(LOCAL_NOTES_KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+
+function writeLocalNotes(notes) {
+  localStorage.setItem(LOCAL_NOTES_KEY, JSON.stringify(notes));
+}
+
+export async function getCurrentSession() {
+  if (!supabase) {
+    const localUser = localStorage.getItem(LOCAL_USER_KEY);
+    return localUser ? { user: JSON.parse(localUser) } : null;
+  }
+
+  const { data } = await supabase.auth.getSession();
+  return data.session;
+}
+
+export async function signInWithInstitutionalEmail(email, password) {
+  if (!supabase) {
+    const user = {
+      id: 'local-demo-user',
+      email,
+      user_metadata: { full_name: 'Juan Gonzalez Tapia' },
+    };
+    localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
+    return { user };
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) throw error;
+  return data.session;
+}
+
+export async function signOut() {
+  localStorage.removeItem(LOCAL_USER_KEY);
+  if (supabase) await supabase.auth.signOut();
+}
+
+export async function getProfile(userId) {
+  if (!supabase || !userId) return null;
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function saveVisualPreference({ userId, deviceType, visualMode }) {
+  localStorage.setItem(`dmt-visual-mode-${deviceType}`, visualMode);
+
+  if (!supabase || !userId) return null;
+
+  const { data, error } = await supabase
+    .from('user_visual_preferences')
+    .upsert(
+      {
+        user_id: userId,
+        device_type: deviceType,
+        visual_mode: visualMode,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,device_type' },
+    )
+    .select()
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function listContextualNotes(userId) {
+  if (!supabase || !userId) return readLocalNotes();
+
+  const { data, error } = await supabase
+    .from('contextual_notes')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+export async function saveContextualNote({
+  userId,
+  page,
+  contextLabel,
+  note,
+  evidenceType,
+}) {
+  const payload = {
+    id: crypto.randomUUID(),
+    user_id: userId || 'local-demo-user',
+    page,
+    context_label: contextLabel,
+    note,
+    evidence_type: evidenceType,
+    created_at: new Date().toISOString(),
+  };
+
+  if (!supabase || !userId) {
+    const notes = [payload, ...readLocalNotes()];
+    writeLocalNotes(notes);
+    return payload;
+  }
+
+  const { data, error } = await supabase
+    .from('contextual_notes')
+    .insert({
+      user_id: userId,
+      page,
+      context_label: contextLabel,
+      note,
+      evidence_type: evidenceType,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
