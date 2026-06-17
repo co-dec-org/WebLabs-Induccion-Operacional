@@ -79,7 +79,17 @@ function getRoute() {
 }
 
 function routeLabel(path) {
-  return allNavItems.find((item) => item.path === path)?.label || 'Login';
+  const labels = {
+    '/home': 'Inicio',
+    '/induccion': 'Inducción Operacional',
+    '/bitacora': 'Bitácora de Entrenamiento',
+    '/marco-legal': 'Marco Legal',
+    '/recursos': 'Recursos',
+    '/perfil': 'Perfil',
+    '/admin-cuentas': 'Cuentas',
+    '/admin-contenidos': 'Editor',
+  };
+  return labels[path] || 'Login';
 }
 
 function slidePath(number) {
@@ -115,22 +125,21 @@ function LoginPage({ onLogin }) {
     <main className="login-page theme-boldo">
       <header className="login-header">
         <div className="login-brand">
-          <div className="shield-mark" aria-hidden="true" />
+          <div className="institutional-logo" aria-hidden="true"><span className="logo-shield">G</span></div>
           <div>
             <strong>Gendarmería de Chile</strong>
             <span>Departamento de Monitoreo Telemático</span>
           </div>
         </div>
-        <nav aria-label="Ayuda institucional">
+        <nav aria-label="Centro de formación institucional">
           <span>Centro de Formación y Desarrollo</span>
-          <span>Ayuda</span>
         </nav>
       </header>
 
       <section className="login-content">
         <form className="login-card" onSubmit={handleSubmit}>
           <div className="login-card-heading">
-            <div className="shield-mark large" aria-hidden="true" />
+            <div className="institutional-logo large" aria-hidden="true"><span className="logo-shield">G</span></div>
             <p className="section-label">Acceso institucional</p>
             <h1>Web-Lab de Entrenamiento Operacional S.M.T.</h1>
             <h2>Sistema de Monitoreo Telemático</h2>
@@ -319,19 +328,22 @@ function AppShell({
 
         <nav className="primary-nav" aria-label="Navegación principal">
           {visibleNavItems.map((item) => (
-            <button
-              key={item.path}
-              className={route === item.path ? 'active' : ''}
-              onClick={() => navigate(item.path)}
-            >
-              <span className="nav-icon">{navIcons[item.path]}</span>
-              {item.label}
-            </button>
+            <React.Fragment key={item.path}>
+              <button
+                className={route === item.path ? 'active' : ''}
+                onClick={() => navigate(item.path)}
+              >
+                <span className="nav-icon">{navIcons[item.path]}</span>
+                {item.label}
+              </button>
+              {item.path === '/induccion' && (
+                <button className="disabled-nav" disabled>
+                  <span className="nav-icon">▷</span>
+                  Simulaciones
+                </button>
+              )}
+            </React.Fragment>
           ))}
-          <button className="disabled-nav" disabled>
-            <span className="nav-icon">▷</span>
-            Simulaciones
-          </button>
           {role === 'supervisor' && (
             <button className="disabled-nav" disabled>
               <span className="nav-icon">◇</span>
@@ -341,9 +353,13 @@ function AppShell({
         </nav>
 
         <div className="progress-block">
-          <div>
+          <div className="help-block">
             <span>Centro de Formación</span>
             <strong>y Desarrollo</strong>
+          </div>
+          <div className="sidebar-institution">
+            <span>Gendarmería de Chile</span>
+            <small>Departamento de Monitoreo Telemático</small>
           </div>
         </div>
       </aside>
@@ -396,6 +412,15 @@ function AppShell({
   );
 }
 
+function PageTitle({ title }) {
+  return (
+    <header className="page-title">
+      <p>Sistema de Monitoreo Telemático</p>
+      <h2>{title}</h2>
+    </header>
+  );
+}
+
 function HomePage({ navigate }) {
   const learningSteps = [
     ['1', 'Comprender el evento', '70% completado'],
@@ -406,6 +431,7 @@ function HomePage({ navigate }) {
 
   return (
     <section className="home-approved">
+      <PageTitle title="Inicio" />
       <div className="home-top-grid">
         <article className="approved-panel welcome-panel">
           <div className="circle-icon">▱</div>
@@ -627,6 +653,7 @@ function InduccionPage({ done, setDone }) {
 
   return (
     <>
+      <PageTitle title="Inducción Operacional" />
       <section className="induccion-layout">
         <aside className="module-browser">
           <label className="search-box light">
@@ -768,6 +795,7 @@ function BitacoraPage({ notes, reloadNotes }) {
 
   return (
     <section className="bitacora-approved">
+      <PageTitle title="Bitácora de Entrenamiento" />
       <article className="summary-strip">
         <div className="circle-icon">▣</div>
         <div>
@@ -856,6 +884,7 @@ function MarcoLegalPage() {
 
   return (
     <section className="legal-approved">
+      <PageTitle title="Marco Legal" />
       <div className="legal-grid">
         <section>
           <article className="approved-panel legal-hero">
@@ -913,6 +942,7 @@ function RecursosPage() {
 
   return (
     <section className="resources-approved">
+      <PageTitle title="Recursos" />
       <div className="resources-grid">
         <section>
           <article className="approved-panel legal-hero">
@@ -967,6 +997,7 @@ function PerfilPage({ user, profile, deviceType, visualMode }) {
 
   return (
     <section className="profile-approved">
+      <PageTitle title="Perfil" />
       <div className="profile-grid">
         <section>
           <article className="approved-panel profile-card">
@@ -1114,6 +1145,43 @@ function FloatingLog({ route, user, onSaved }) {
   const [note, setNote] = useState('');
   const [evidenceType, setEvidenceType] = useState('Texto');
   const [status, setStatus] = useState('');
+  const [position, setPosition] = useState(null);
+  const dragRef = useMemo(() => ({ current: null }), []);
+
+  function getPanelStyle() {
+    if (!position) return {};
+    return {
+      left: `${position.x}px`,
+      top: `${position.y}px`,
+      right: 'auto',
+      bottom: 'auto',
+    };
+  }
+
+  function beginDrag(event) {
+    if (event.button !== undefined && event.button !== 0) return;
+    const rect = event.currentTarget.closest('.floating-log')?.getBoundingClientRect();
+    if (!rect) return;
+    dragRef.current = {
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  }
+
+  function moveDrag(event) {
+    if (!dragRef.current) return;
+    const width = large ? 440 : 340;
+    const height = open ? (large ? 460 : 360) : 74;
+    const x = Math.min(Math.max(16, event.clientX - dragRef.current.offsetX), window.innerWidth - width - 16);
+    const y = Math.min(Math.max(16, event.clientY - dragRef.current.offsetY), window.innerHeight - height - 16);
+    setPosition({ x, y });
+  }
+
+  function endDrag(event) {
+    dragRef.current = null;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+  }
 
   async function handleSave() {
     if (!note.trim()) {
@@ -1139,19 +1207,34 @@ function FloatingLog({ route, user, onSaved }) {
 
   if (!open) {
     return (
-      <aside className="floating-log collapsed">
-        <button className="floating-log-launcher" onClick={() => setOpen(true)}>
-          Bitácora
+      <aside className="floating-log collapsed" style={getPanelStyle()}>
+        <button
+          className="floating-log-launcher"
+          onClick={() => setOpen(true)}
+          onPointerDown={beginDrag}
+          onPointerMove={moveDrag}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          title="Arrastrar para mover. Clic para abrir notas."
+        >
+          Notas
         </button>
       </aside>
     );
   }
 
   return (
-    <aside className={`floating-log ${large ? 'large' : 'compact'}`}>
-      <header>
+    <aside className={`floating-log ${large ? 'large' : 'compact'}`} style={getPanelStyle()}>
+      <header
+        className="floating-log-drag-handle"
+        onPointerDown={beginDrag}
+        onPointerMove={moveDrag}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        title="Arrastrar panel de notas"
+      >
         <div>
-          <span>Bitácora contextual</span>
+          <span>Notas contextuales</span>
           <strong>{routeLabel(route)}</strong>
         </div>
         <div className="floating-log-actions">
@@ -1175,7 +1258,7 @@ function FloatingLog({ route, user, onSaved }) {
           placeholder="Registrar observación, duda o criterio de análisis."
         />
       </label>
-      <button className="save-note" onClick={handleSave}>Guardar registro</button>
+      <button className="save-note" onClick={handleSave}>Guardar nota</button>
       <p>{status || 'No ingresar datos reales de víctimas, PSC, domicilios, teléfonos, coordenadas, folios ni causas.'}</p>
     </aside>
   );
