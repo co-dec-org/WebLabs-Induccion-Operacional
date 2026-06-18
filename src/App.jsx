@@ -99,11 +99,7 @@ function getRole(profile) {
 function GendarmeriaLogo({ compact = false }) {
   return (
     <div className={compact ? 'gendarmeria-logo compact' : 'gendarmeria-logo'} aria-label="Gendarmería de Chile">
-      <svg viewBox="0 0 72 86" role="img" aria-hidden="true">
-        <path d="M36 4 62 14v22c0 19.7-10.4 35.4-26 45C20.4 71.4 10 55.7 10 36V14L36 4Z" />
-        <path d="M36 14 52 20v16c0 13.7-6.2 24.9-16 32-9.8-7.1-16-18.3-16-32V20l16-6Z" />
-        <path d="M36 24v34M27 33h18M27 43h18" />
-      </svg>
+      <img src="/gendarmeria-logo.png" alt="" aria-hidden="true" />
       {!compact && (
         <div>
           <strong>Gendarmería de Chile</strong>
