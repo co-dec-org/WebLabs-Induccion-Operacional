@@ -2869,3 +2869,11 @@ body {
     transform: translate(-50%, -50%);
   }
 }
+
+/* Login V12: caja de acceso al 80% en desktop */
+@media (min-width: 1181px) {
+  #root > main.login-page.theme-boldo .login-card {
+    transform: scale(.8);
+    transform-origin: center center;
+  }
+}
