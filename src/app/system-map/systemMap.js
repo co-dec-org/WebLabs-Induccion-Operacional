@@ -1,66 +1,155 @@
-export const roles = ["operador", "supervisor", "admin"];
+export const roles = ['operador', 'supervisor', 'admin'];
 
 export const pageStatus = {
-  inicio: "enabled",
-  induccion: "enabled",
-  simulaciones: "disabled",
-  marco_legal: "enabled",
-  recursos: "enabled",
-  bitacora: "enabled",
-  perfil: "enabled",
-  supervision: "enabled",
-  admin: "enabled",
-  editor_visual: "draft"
+  login: 'enabled',
+  inicio: 'enabled',
+  induccion: 'enabled',
+  bitacora: 'enabled',
+  marco_legal: 'enabled',
+  recursos: 'enabled',
+  perfil: 'enabled',
+  simulaciones: 'disabled',
+  supervision: 'disabled',
+  admin: 'enabled',
+  editor_visual: 'enabled',
+};
+
+export const pageRoutes = {
+  login: '/login',
+  inicio: '/home',
+  induccion: '/induccion',
+  bitacora: '/bitacora',
+  marco_legal: '/marco-legal',
+  recursos: '/recursos',
+  perfil: '/perfil',
+  simulaciones: '/simulaciones',
+  supervision: '/supervision',
+  admin: '/admin-cuentas',
+  editor_visual: '/admin-contenidos',
+};
+
+export const pageAliases = {
+  admin: ['/admin'],
+  editor_visual: ['/admin/editor-visual'],
+};
+
+export const pageLabels = {
+  login: 'Login',
+  inicio: 'Inicio',
+  induccion: 'Inducción',
+  bitacora: 'Bitácora',
+  marco_legal: 'Marco legal',
+  recursos: 'Recursos',
+  perfil: 'Perfil',
+  simulaciones: 'Simulaciones',
+  supervision: 'Equipo',
+  admin: 'Cuentas',
+  editor_visual: 'Editor',
+};
+
+export const pageIcons = {
+  inicio: '⌂',
+  induccion: '▱',
+  bitacora: '▣',
+  marco_legal: '⚖',
+  recursos: '▤',
+  perfil: '○',
+  simulaciones: '▷',
+  supervision: '◇',
+  admin: '◎',
+  editor_visual: '✎',
 };
 
 export const navigationByRole = {
   operador: [
-    "inicio",
-    "induccion",
-    "simulaciones",
-    "marco_legal",
-    "recursos",
-    "bitacora",
-    "perfil"
+    'inicio',
+    'induccion',
+    'bitacora',
+    'marco_legal',
+    'recursos',
+    'perfil',
+    'simulaciones',
   ],
   supervisor: [
-    "inicio",
-    "induccion",
-    "simulaciones",
-    "marco_legal",
-    "recursos",
-    "bitacora",
-    "perfil",
-    "supervision"
+    'inicio',
+    'induccion',
+    'bitacora',
+    'marco_legal',
+    'recursos',
+    'perfil',
+    'simulaciones',
+    'supervision',
   ],
   admin: [
-    "inicio",
-    "induccion",
-    "simulaciones",
-    "marco_legal",
-    "recursos",
-    "bitacora",
-    "perfil",
-    "supervision",
-    "admin",
-    "editor_visual"
-  ]
+    'inicio',
+    'induccion',
+    'bitacora',
+    'marco_legal',
+    'recursos',
+    'perfil',
+    'admin',
+    'editor_visual',
+    'simulaciones',
+  ],
 };
 
-export const pageRoutes = {
-  inicio: "/home",
-  induccion: "/induccion",
-  simulaciones: "/simulaciones",
-  marco_legal: "/marco-legal",
-  recursos: "/recursos",
-  bitacora: "/bitacora",
-  perfil: "/perfil",
-  supervision: "/supervision",
-  admin: "/admin",
-  editor_visual: "/admin/editor-visual"
+export const pageAccess = {
+  login: roles,
+  inicio: roles,
+  induccion: roles,
+  bitacora: roles,
+  marco_legal: roles,
+  recursos: roles,
+  perfil: roles,
+  simulaciones: roles,
+  supervision: ['supervisor', 'admin'],
+  admin: ['admin'],
+  editor_visual: ['admin'],
 };
 
 export const disabledPageMessage = {
   simulaciones:
-    "Funcionalidad no disponible en esta versión. Módulo proyectado para una etapa posterior de entrenamiento operacional."
+    'Funcionalidad no disponible en esta versión. Módulo proyectado para una etapa posterior de entrenamiento operacional.',
+  supervision:
+    'Módulo de supervisión proyectado para una etapa posterior.',
 };
+
+export function normalizeRole(role) {
+  return roles.includes(role) ? role : 'operador';
+}
+
+export function getPageKeyFromPath(path) {
+  const directMatch = Object.entries(pageRoutes).find(
+    ([, route]) => route === path,
+  );
+
+  if (directMatch) return directMatch[0];
+
+  const aliasMatch = Object.entries(pageAliases).find(([, aliases]) =>
+    aliases.includes(path),
+  );
+
+  return aliasMatch?.[0] || null;
+}
+
+export function getPageLabelFromPath(path) {
+  const pageKey = getPageKeyFromPath(path);
+  return pageKey ? pageLabels[pageKey] : 'Página no encontrada';
+}
+
+export function canAccessPage(role, pageKey) {
+  const normalizedRole = normalizeRole(role);
+  return pageAccess[pageKey]?.includes(normalizedRole) || false;
+}
+
+export function getNavigationForRole(role) {
+  const normalizedRole = normalizeRole(role);
+
+  return navigationByRole[normalizedRole].map((pageKey) => ({
+    key: pageKey,
+    path: pageRoutes[pageKey],
+    label: pageLabels[pageKey],
+    icon: pageIcons[pageKey],
+    status: pageStatus[pageKey],
+  }));
+}
