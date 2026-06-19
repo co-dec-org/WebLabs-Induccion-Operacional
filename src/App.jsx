@@ -11,6 +11,9 @@ import {
   signOut,
   updateInitialPassword,
 } from './lib/dmtApi.js';
+import {
+  getPageLabelFromPath,
+} from './app/system-map/systemMap.js';
 
 const baseNavItems = [
   { path: '/home', label: 'Inicio' },
@@ -79,7 +82,7 @@ function getRoute() {
 }
 
 function routeLabel(path) {
-  return allNavItems.find((item) => item.path === path)?.label || 'Login';
+  return getPageLabelFromPath(path);
 }
 
 function slidePath(number) {
