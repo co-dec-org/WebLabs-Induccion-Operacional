@@ -87,6 +87,7 @@ export const navigationByRole = {
     'marco_legal',
     'recursos',
     'perfil',
+    'supervision',
     'admin',
     'editor_visual',
     'simulaciones',

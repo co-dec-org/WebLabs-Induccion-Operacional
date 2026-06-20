@@ -13,6 +13,11 @@ import {
 } from './lib/dmtApi.js';
 import {
   getPageLabelFromPath,
+  getNavigationForRole,
+  getPageKeyFromPath,
+  canAccessPage,
+  pageStatus,
+  disabledPageMessage,
 } from './app/system-map/systemMap.js';
 
 const baseNavItems = [
@@ -310,7 +315,6 @@ function AppShell({
 }) {
   const displayName = getUserDisplayName(user, profile);
   const role = getRole(profile);
-  const visibleNavItems = role === 'admin' ? [...baseNavItems, ...adminNavItems] : baseNavItems;
 
   return (
     <main className={`app-shell theme-${visualMode} route-${route.replace('/', '') || 'login'}`}>
@@ -329,26 +333,22 @@ function AppShell({
         </label>
 
         <nav className="primary-nav" aria-label="Navegación principal">
-          {visibleNavItems.map((item) => (
-            <button
-              key={item.path}
-              className={route === item.path ? 'active' : ''}
-              onClick={() => navigate(item.path)}
-            >
-              <span className="nav-icon">{navIcons[item.path]}</span>
-              {item.label}
-            </button>
-          ))}
-          <button className="disabled-nav" disabled>
-            <span className="nav-icon">▷</span>
-            Simulaciones
-          </button>
-          {role === 'supervisor' && (
-            <button className="disabled-nav" disabled>
-              <span className="nav-icon">◇</span>
-              Equipo
-            </button>
-          )}
+          {getNavigationForRole(role).map((item) => {
+            const isDisabled = item.status === 'disabled';
+            return (
+              <button
+                key={item.key}
+                className={`${route === item.path ? 'active' : ''}${isDisabled ? ' disabled-nav' : ''}`.trim()}
+                onClick={isDisabled ? undefined : () => navigate(item.path)}
+                disabled={isDisabled}
+                aria-disabled={isDisabled || undefined}
+                title={isDisabled ? disabledPageMessage[item.key] : undefined}
+              >
+                <span className="nav-icon">{item.icon}</span>
+                {item.label}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="progress-block">
@@ -1119,6 +1119,22 @@ function RestrictedPage() {
   );
 }
 
+function DisabledPage({ pageKey, navigate }) {
+  return (
+    <section className="page-grid">
+      <article className="hero-panel">
+        <p className="section-label">No disponible</p>
+        <h3>Módulo no disponible en esta versión</h3>
+        <p>
+          {disabledPageMessage[pageKey] ||
+            'Esta sección estará disponible en una etapa posterior del entrenamiento operacional.'}
+        </p>
+        <button onClick={() => navigate('/home')}>Volver a Inicio</button>
+      </article>
+    </section>
+  );
+}
+
 function FloatingLog({ route, user, onSaved }) {
   const [open, setOpen] = useState(false);
   const [large, setLarge] = useState(false);
@@ -1317,11 +1333,17 @@ function App() {
       />
     );
   }
-  if (route === '/admin-cuentas') {
-    page = role === 'admin' ? <AdminAccountsPage /> : <RestrictedPage />;
-  }
-  if (route === '/admin-contenidos') {
-    page = role === 'admin' ? <AdminContentPage /> : <RestrictedPage />;
+  if (route === '/admin-cuentas') page = <AdminAccountsPage />;
+  if (route === '/admin-contenidos') page = <AdminContentPage />;
+
+  // Gates sistemáticos (la sesión ya se validó arriba):
+  //  - PageStatusGate: una página 'disabled' no es accesible ni por URL directa.
+  //  - RoleGate: el rol debe figurar en pageAccess de esa página.
+  const currentPageKey = getPageKeyFromPath(route);
+  if (currentPageKey && pageStatus[currentPageKey] === 'disabled') {
+    page = <DisabledPage pageKey={currentPageKey} navigate={navigate} />;
+  } else if (currentPageKey && !canAccessPage(role, currentPageKey)) {
+    page = <RestrictedPage />;
   }
 
   return (
