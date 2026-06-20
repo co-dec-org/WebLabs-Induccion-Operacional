@@ -165,3 +165,29 @@ export async function saveContextualNote({
   if (error) throw error;
   return data;
 }
+
+
+export async function getPageContent(pageKey) {
+  // Devuelve { page, blocks } o null. Nunca lanza: ante cualquier problema
+  // retorna null para que la UI use su fallback (el código actual).
+  if (!supabase || !pageKey) return null;
+  try {
+    const { data: page, error: pageError } = await supabase
+      .from('site_pages')
+      .select('id, page_key, route, title, status, default_theme')
+      .eq('page_key', pageKey)
+      .maybeSingle();
+    if (pageError || !page) return null;
+
+    const { data: blocks, error: blocksError } = await supabase
+      .from('page_blocks')
+      .select('id, block_type, position, props, is_visible, parent_block_id')
+      .eq('page_id', page.id)
+      .order('position', { ascending: true });
+    if (blocksError) return null;
+
+    return { page, blocks: blocks || [] };
+  } catch {
+    return null;
+  }
+}

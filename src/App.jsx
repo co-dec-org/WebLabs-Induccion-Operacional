@@ -10,6 +10,7 @@ import {
   signInWithInstitutionalEmail,
   signOut,
   updateInitialPassword,
+  getPageContent,
 } from './lib/dmtApi.js';
 import {
   getPageLabelFromPath,
@@ -1135,6 +1136,61 @@ function DisabledPage({ pageKey, navigate }) {
   );
 }
 
+// ---- Editor Visual: render de bloques desde la BD (con fallback al código actual) ----
+function HeroBlock({ props }) {
+  return (
+    <article className="hero-panel">
+      <p className="section-label">{props.eyebrow || 'Web Lab S.M.T.'}</p>
+      <h3>{props.title}</h3>
+      {props.subtitle ? <p>{props.subtitle}</p> : null}
+      {props.body ? <p>{props.body}</p> : null}
+    </article>
+  );
+}
+
+function BlockRenderer({ blocks }) {
+  return (
+    <section className="page-grid">
+      {blocks.map((block) => {
+        switch (block.block_type) {
+          case 'hero':
+            return <HeroBlock key={block.id} props={block.props || {}} />;
+          default:
+            return null;
+        }
+      })}
+    </section>
+  );
+}
+
+// Intenta renderizar la página desde la BD; si solo hay contenido "seed"
+// o algo falla, muestra el fallback (la página actual codificada). Cero riesgo.
+function EditablePage({ pageKey, fallback }) {
+  const [blocks, setBlocks] = useState(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    setLoaded(false);
+    getPageContent(pageKey).then((res) => {
+      if (!alive) return;
+      setBlocks(res?.blocks ?? null);
+      setLoaded(true);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [pageKey]);
+
+  if (!loaded) return fallback;
+
+  const visibles = (blocks || []).filter((b) => b.is_visible !== false);
+  const hasRealContent = visibles.some((b) => !(b.props && b.props.seed === true));
+  if (!hasRealContent) return fallback;
+
+  return <BlockRenderer blocks={visibles} />;
+}
+
 function FloatingLog({ route, user, onSaved }) {
   const [open, setOpen] = useState(false);
   const [large, setLarge] = useState(false);
@@ -1321,7 +1377,7 @@ function App() {
   let page = <HomePage navigate={navigate} />;
   if (route === '/induccion') page = <InduccionPage done={done} setDone={setDone} />;
   if (route === '/bitacora') page = <BitacoraPage notes={notes} reloadNotes={reloadNotes} />;
-  if (route === '/marco-legal') page = <MarcoLegalPage />;
+  if (route === '/marco-legal') page = <EditablePage pageKey="marco_legal" fallback={<MarcoLegalPage />} />;
   if (route === '/recursos') page = <RecursosPage />;
   if (route === '/perfil') {
     page = (
