@@ -1,3 +1,4 @@
+import React from 'react';
 export function GendarmeriaLogo({ compact = false }) {
   return (
     <div className={compact ? 'gendarmeria-logo compact' : 'gendarmeria-logo'} aria-label="Gendarmería de Chile">

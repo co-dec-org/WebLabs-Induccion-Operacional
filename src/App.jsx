@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { canAccessPage, getPageKeyFromPath, pageStatus } from './app/system-map/systemMap.js';
 import { AppShell } from './components/AppShell.jsx';
@@ -137,7 +138,7 @@ function App() {
     );
   }
   if (route === '/admin-cuentas') page = <AdminAccountsPage />;
-  if (route === '/admin-contenidos') page = <AdminContentPage />;
+  if (route === '/admin-contenidos') page = <AdminContentPage user={user} />;
 
   // Gates sistemáticos (la sesión ya se validó arriba):
   //  - PageStatusGate: una página 'disabled' no es accesible ni por URL directa.

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { saveContextualNote } from '../lib/dmtApi.js';
 import { evidenceTypes } from '../lib/uiConstants.js';

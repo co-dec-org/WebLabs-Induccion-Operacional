@@ -1,3 +1,4 @@
+import React from 'react';
 import { useMemo, useState } from 'react';
 import { modules } from '../data/modules.js';
 import { inductionMenu } from '../lib/uiConstants.js';

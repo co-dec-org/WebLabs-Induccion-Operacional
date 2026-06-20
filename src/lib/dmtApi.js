@@ -191,3 +191,47 @@ export async function getPageContent(pageKey) {
     return null;
   }
 }
+
+
+export async function listSitePages() {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('site_pages')
+    .select('id, page_key, route, title, status, sort_order')
+    .order('sort_order', { ascending: true });
+  if (error) return [];
+  return data || [];
+}
+
+export async function getLatestDraft(pageId) {
+  if (!supabase || !pageId) return null;
+  const { data, error } = await supabase
+    .from('editor_drafts')
+    .select('id, data, updated_at')
+    .eq('page_id', pageId)
+    .eq('is_active', true)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) return null;
+  return data;
+}
+
+export async function saveDraft({ pageId, userId, blocks, label }) {
+  if (!supabase || !pageId) return { ok: false, error: 'sin-conexion' };
+  // Desactiva borradores anteriores y crea uno nuevo activo (historial simple).
+  await supabase.from('editor_drafts').update({ is_active: false }).eq('page_id', pageId);
+  const { data, error } = await supabase
+    .from('editor_drafts')
+    .insert({
+      page_id: pageId,
+      author_id: userId || null,
+      label: label || null,
+      data: { blocks },
+      is_active: true,
+    })
+    .select('id')
+    .maybeSingle();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, id: data?.id };
+}

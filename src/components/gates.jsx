@@ -1,3 +1,4 @@
+import React from 'react';
 import { disabledPageMessage } from '../app/system-map/systemMap.js';
 
 export function RestrictedPage() {

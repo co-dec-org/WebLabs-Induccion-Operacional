@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { GendarmeriaLogo } from '../components/GendarmeriaLogo.jsx';
 import { HomePage } from './pages.jsx';

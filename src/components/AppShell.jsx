@@ -1,3 +1,4 @@
+import React from 'react';
 import { disabledPageMessage, getNavigationForRole } from '../app/system-map/systemMap.js';
 import { getRole, getUserDisplayName, routeLabel } from '../lib/uiHelpers.js';
 

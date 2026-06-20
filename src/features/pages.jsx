@@ -1,3 +1,4 @@
+import React from 'react';
 import { deviceLabels, evidenceTypes } from '../lib/uiConstants.js';
 import { getRole, getUserDisplayName } from '../lib/uiHelpers.js';
 
