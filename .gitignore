@@ -1,0 +1,28 @@
+# === Variables de entorno / secretos ===
+.env
+.env.local
+.env.*.local
+*.env
+
+# === Datos reales de usuarios / planillas (NUNCA al repo) ===
+# Los datos reales viven solo en Supabase. Usar la plantilla con placeholders.
+*_usuarios_*.sql
+# ...pero SÍ permitir plantillas/ejemplos sin datos reales:
+!*_usuarios_*.example.sql
+!*_usuarios_*.TEMPLATE.sql
+*.xlsx
+*.csv
+
+# Nota: SQL de esquema/seed no se ven afectados (no contienen "_usuarios_"):
+#   supabase_schema.sql, seed_modules.sql, supabase/*.sql
+
+# === Build / dependencias ===
+node_modules/
+dist/
+.vite/
+
+# === Sistema / editor ===
+.DS_Store
+*.log
+.idea/
+.vscode/
