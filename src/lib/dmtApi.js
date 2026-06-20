@@ -235,3 +235,29 @@ export async function saveDraft({ pageId, userId, blocks, label }) {
   if (error) return { ok: false, error: error.message };
   return { ok: true, id: data?.id };
 }
+
+
+export async function publishPage(pageId, blocks) {
+  if (!supabase || !pageId) return { ok: false, error: 'sin-conexion' };
+  const { data, error } = await supabase.rpc('publish_page', { p_page_id: pageId, p_blocks: blocks });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, versionId: data };
+}
+
+export async function listPageVersions(pageId) {
+  if (!supabase || !pageId) return [];
+  const { data, error } = await supabase
+    .from('page_versions')
+    .select('id, version_number, published_at')
+    .eq('page_id', pageId)
+    .order('version_number', { ascending: false });
+  if (error) return [];
+  return data || [];
+}
+
+export async function restoreVersion(versionId) {
+  if (!supabase || !versionId) return { ok: false, error: 'sin-conexion' };
+  const { error } = await supabase.rpc('restore_version', { p_version_id: versionId });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}

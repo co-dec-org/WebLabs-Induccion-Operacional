@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getPageContent, listSitePages, getLatestDraft, saveDraft } from '../lib/dmtApi.js';
+import { getPageContent, listSitePages, getLatestDraft, saveDraft, publishPage, listPageVersions, restoreVersion } from '../lib/dmtApi.js';
 import { BlockRenderer } from '../components/blocks.jsx';
 
 export function AdminAccountsPage() {
@@ -66,6 +66,7 @@ export function AdminContentPage({ user }) {
   const [preview, setPreview] = useState(false);
   const [status, setStatus] = useState('Cargando…');
   const [saving, setSaving] = useState(false);
+  const [versions, setVersions] = useState([]);
 
   useEffect(() => {
     let alive = true;
@@ -100,6 +101,40 @@ export function AdminContentPage({ user }) {
     })();
     return () => { alive = false; };
   }, [pageId]);
+
+  useEffect(() => {
+    if (!currentPage) { setVersions([]); return; }
+    let alive = true;
+    listPageVersions(currentPage.id).then((vs) => { if (alive) setVersions(vs); });
+    return () => { alive = false; };
+  }, [pageId]);
+
+  async function reloadVersions() {
+    if (currentPage) setVersions(await listPageVersions(currentPage.id));
+  }
+
+  async function handlePublish() {
+    if (!currentPage) return;
+    if (!window.confirm('Publicar reemplazará el contenido VISIBLE de esta página por estos bloques. ¿Continuar?')) return;
+    setSaving(true); setStatus('Publicando…');
+    const res = await publishPage(currentPage.id, blocks);
+    setSaving(false);
+    if (res.ok) { setStatus('Publicado ✓ — ahora es la versión viva de la página.'); reloadVersions(); }
+    else setStatus('No se pudo publicar: ' + (res.error || ''));
+  }
+
+  async function handleRestore(v) {
+    if (!currentPage) return;
+    if (!window.confirm('¿Restaurar la versión ' + v.version_number + ' como contenido vivo?')) return;
+    setStatus('Restaurando…');
+    const res = await restoreVersion(v.id);
+    if (res.ok) {
+      const c = await getPageContent(currentPage.page_key);
+      setBlocks(normalizeBlocks(c && c.blocks));
+      setStatus('Versión ' + v.version_number + ' restaurada ✓');
+      reloadVersions();
+    } else setStatus('No se pudo restaurar: ' + (res.error || ''));
+  }
 
   function setProp(idx, key, value) {
     setBlocks((bs) => bs.map((b, i) => (i === idx ? { ...b, props: { ...b.props, [key]: value } } : b)));
@@ -155,6 +190,7 @@ export function AdminContentPage({ user }) {
             </select>
           </label>
           <button onClick={handleSave} disabled={saving || !currentPage}>Guardar borrador</button>
+          <button onClick={handlePublish} disabled={saving || !currentPage}>Publicar</button>
           <button className="ghost-button" onClick={() => setPreview((v) => !v)}>
             {preview ? 'Volver a editar' : 'Vista previa'}
           </button>
@@ -198,6 +234,22 @@ export function AdminContentPage({ user }) {
           )}
         </div>
       )}
+
+      <article className="status-card">
+        <span>Historial de versiones</span>
+        {versions.length === 0 ? (
+          <p>Sin versiones publicadas aún.</p>
+        ) : (
+          <div>
+            {versions.map((v) => (
+              <div key={v.id} style={{ display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--line)' }}>
+                <span>Versión {v.version_number} · {new Date(v.published_at).toLocaleString()}</span>
+                <button className="ghost-button" onClick={() => handleRestore(v)}>Restaurar</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </article>
     </section>
   );
 }
