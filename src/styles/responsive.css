@@ -1,0 +1,155 @@
+/* responsive.css — @media queries (orden original) */
+
+@media (max-width: 1180px) {
+  .app-shell,
+  .login-page,
+  .password-page,
+  .induccion-layout,
+  .page-grid,
+  .page-grid.two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .side-nav {
+    position: relative;
+    height: auto;
+  }
+
+  .hero-panel {
+    grid-column: auto;
+  }
+
+  .top-bar {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 760px) {
+  .login-page,
+  .password-page,
+  .workspace,
+  .side-nav {
+    padding: 18px;
+  }
+
+  .login-card,
+  .hero-panel,
+  .status-card,
+  .module-browser,
+  .module-summary,
+  .log-list-panel,
+  .resource-list {
+    padding: 18px;
+  }
+
+  .deck-toolbar,
+  .deck-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+@media (max-width: 1180px) {
+  .login-page.theme-boldo {
+    grid-template-rows: auto 1fr auto;
+    overflow: auto;
+  }
+
+  .login-page.theme-boldo .login-content {
+    grid-template-columns: 1fr;
+    padding: 28px;
+  }
+
+  .login-page.theme-boldo .login-card,
+  .login-page.theme-boldo .login-hero {
+    margin-inline: auto;
+    width: min(100%, 620px);
+  }
+
+  .login-page.theme-boldo .document-figure {
+    display: none;
+  }
+}
+/* Desktop viewport contract: no escalar sobre 1920 x 1080 */
+@media (min-width: 1181px) {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    background: #07130f;
+    overflow: auto;
+  }
+
+  #root {
+    display: grid;
+    min-height: 100svh;
+    place-items: center;
+  }
+
+  #root > main.login-page,
+  #root > main.password-page,
+  #root > main.app-shell {
+    width: min(100vw, 1920px);
+    height: min(100svh, 1080px);
+    max-width: 1920px;
+    max-height: 1080px;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #root > main.login-page.theme-boldo {
+    grid-template-rows: 96px minmax(0, 1fr) 74px;
+  }
+
+  #root > main.login-page.theme-boldo .login-content {
+    min-height: 0;
+  }
+
+  #root > main.password-page {
+    min-height: 0;
+  }
+
+  #root > main.app-shell {
+    position: relative;
+    grid-template-columns: 308px minmax(0, 1fr);
+    padding-bottom: 0;
+  }
+
+  #root > main.app-shell .side-nav {
+    position: sticky;
+    inset: auto;
+    top: 0;
+    width: 308px;
+    height: 100%;
+    max-height: 1080px;
+  }
+
+  #root > main.app-shell .workspace {
+    height: 100%;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  #root > main.app-shell .floating-log {
+    position: absolute;
+    right: 28px;
+    bottom: 28px;
+  }
+
+  .presentation-overlay {
+    inset: 50% auto auto 50%;
+    width: min(100vw, 1920px);
+    height: min(100svh, 1080px);
+    max-width: 1920px;
+    max-height: 1080px;
+    transform: translate(-50%, -50%);
+  }
+}
+/* Login V12: caja de acceso al 80% en desktop */
+@media (min-width: 1181px) {
+  #root > main.login-page.theme-boldo .login-card {
+    transform: scale(.8);
+    transform-origin: center center;
+  }
+}

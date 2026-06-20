@@ -1,0 +1,34 @@
+/* tokens.css — variables de diseño (:root) */
+
+:root {
+  color-scheme: light;
+  --green-950: #001d16;
+  --green-900: #003327;
+  --green-800: #064436;
+  --green-700: #0b5b48;
+  --gold: #c99635;
+  --gold-strong: #a46f15;
+  --gold-warm-surface: #ded0b7;
+  --ink: #14211d;
+  --muted: #63706b;
+  --line: rgba(12, 48, 37, 0.16);
+  --surface: #f7f4ee;
+  --paper: #fffdf8;
+  --risk: #a93624;
+}
+/* =========================
+   QA visual final aprobado
+   ========================= */
+
+:root {
+  --approved-green-950: #003a2e;
+  --approved-green-900: #004536;
+  --approved-green-800: #075845;
+  --approved-amber: #f2b51d;
+  --approved-amber-soft: #f4e6c3;
+  --approved-bg: #f7f8f3;
+  --approved-card: #ffffff;
+  --approved-line: rgba(0, 61, 48, 0.18);
+  --approved-muted: #667571;
+  --approved-shadow: 0 18px 48px rgba(0, 55, 43, 0.12);
+}
