@@ -1511,7 +1511,7 @@ body {
   background: transparent;
   padding: 0;
 }
-.route-induccion .primary-nav {
+.route-induccion .module-browser {
   display: none;
 }
 .route-induccion .progress-block {

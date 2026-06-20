@@ -37,7 +37,7 @@ export function FloatingLog({ route, user, onSaved }) {
     return (
       <aside className="floating-log collapsed">
         <button className="floating-log-launcher" onClick={() => setOpen(true)}>
-          Bitácora
+          Notas
         </button>
       </aside>
     );
@@ -47,7 +47,7 @@ export function FloatingLog({ route, user, onSaved }) {
     <aside className={`floating-log ${large ? 'large' : 'compact'}`}>
       <header>
         <div>
-          <span>Bitácora contextual</span>
+          <span>Notas contextuales</span>
           <strong>{routeLabel(route)}</strong>
         </div>
         <div className="floating-log-actions">
