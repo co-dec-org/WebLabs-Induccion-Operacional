@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { saveContextualNote } from '../lib/dmtApi.js';
 import { evidenceTypes } from '../lib/uiConstants.js';
 import { routeLabel } from '../lib/uiHelpers.js';
@@ -10,6 +10,34 @@ export function FloatingLog({ route, user, onSaved }) {
   const [note, setNote] = useState('');
   const [evidenceType, setEvidenceType] = useState('Texto');
   const [status, setStatus] = useState('');
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const drag = useRef(null);
+
+  useEffect(() => {
+    function onMove(event) {
+      if (!drag.current) return;
+      setPos({
+        x: drag.current.baseX + (event.clientX - drag.current.startX),
+        y: drag.current.baseY + (event.clientY - drag.current.startY),
+      });
+    }
+    function onUp() {
+      drag.current = null;
+    }
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, []);
+
+  function startDrag(event) {
+    // No arrastrar si se hace clic en un botón del encabezado.
+    if (event.target.closest && event.target.closest('button')) return;
+    drag.current = { startX: event.clientX, startY: event.clientY, baseX: pos.x, baseY: pos.y };
+    event.preventDefault();
+  }
 
   async function handleSave() {
     if (!note.trim()) {
@@ -44,15 +72,18 @@ export function FloatingLog({ route, user, onSaved }) {
   }
 
   return (
-    <aside className={`floating-log ${large ? 'large' : 'compact'}`}>
-      <header>
+    <aside
+      className={`floating-log ${large ? 'large' : 'compact'}`}
+      style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
+    >
+      <header onMouseDown={startDrag} style={{ cursor: 'move', userSelect: 'none' }}>
         <div>
-          <span>Notas contextuales</span>
+          <span>Notas contextuales · ⠿ arrastra</span>
           <strong>{routeLabel(route)}</strong>
         </div>
         <div className="floating-log-actions">
           <button onClick={() => setLarge(!large)}>{large ? 'Achicar' : 'Agrandar'}</button>
-          <button onClick={() => setOpen(false)}>Minimizar</button>
+          <button onClick={() => { setOpen(false); setPos({ x: 0, y: 0 }); }}>Minimizar</button>
         </div>
       </header>
       <label>
