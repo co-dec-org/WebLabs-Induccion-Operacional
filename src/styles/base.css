@@ -1349,7 +1349,7 @@ body {
 }
 .home-top-grid {
   display: grid;
-  grid-template-columns: 1fr 1.05fr;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 22px;
 }
 .approved-panel {
@@ -1357,7 +1357,7 @@ body {
 }
 .welcome-panel {
   display: grid;
-  grid-template-columns: 100px 1fr 160px;
+  grid-template-columns: 100px minmax(0, 1fr) minmax(0, 160px);
   align-items: center;
   min-height: 260px;
 }
@@ -1406,7 +1406,7 @@ body {
 }
 .route-steps {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 28px;
 }
 .route-step {
@@ -1449,7 +1449,7 @@ body {
 }
 .home-card-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
   margin-top: 16px;
 }
@@ -1474,7 +1474,7 @@ body {
 }
 .home-bottom-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 18px;
   margin-top: 16px;
 }
