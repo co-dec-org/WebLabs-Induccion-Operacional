@@ -166,3 +166,27 @@
     grid-column: 1 / -1;
   }
 }
+
+/* Marco desktop FLUIDO: nunca recortar contenido (arregla iPad y pantallas < 1920) */
+@media (min-width: 1181px) {
+  #root > main.app-shell {
+    height: auto;
+    max-height: none;
+    min-height: 100svh;
+    overflow: visible;
+  }
+  #root > main.app-shell .side-nav {
+    position: sticky;
+    top: 0;
+    height: auto;
+    max-height: 100svh;
+    align-self: start;
+  }
+  #root > main.app-shell .workspace {
+    height: auto;
+    overflow: visible;
+  }
+  #root > main.app-shell .floating-log {
+    position: fixed;
+  }
+}
