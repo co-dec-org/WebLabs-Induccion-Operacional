@@ -164,7 +164,9 @@ function App() {
       >
         {page}
       </AppShell>
-      <FloatingLog route={route} user={user} onSaved={reloadNotes} />
+      {route !== '/admin-contenidos' && route !== '/admin-cuentas' && (
+        <FloatingLog route={route} user={user} onSaved={reloadNotes} />
+      )}
     </>
   );
 }
