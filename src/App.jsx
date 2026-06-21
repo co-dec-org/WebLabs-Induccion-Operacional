@@ -123,17 +123,18 @@ function App() {
   }
 
   let page = <HomePage navigate={navigate} />;
+  if (route === '/home') page = <EditablePage pageKey="inicio" fallback={<HomePage navigate={navigate} />} />;
   if (route === '/induccion') page = <InduccionPage done={done} setDone={setDone} />;
-  if (route === '/bitacora') page = <BitacoraPage notes={notes} reloadNotes={reloadNotes} />;
+  if (route === '/bitacora') page = <EditablePage pageKey="bitacora" fallback={<BitacoraPage notes={notes} reloadNotes={reloadNotes} />} />;
   if (route === '/marco-legal') page = <EditablePage pageKey="marco_legal" fallback={<MarcoLegalPage />} />;
-  if (route === '/recursos') page = <RecursosPage />;
+  if (route === '/recursos') page = <EditablePage pageKey="recursos" fallback={<RecursosPage />} />;
   if (route === '/perfil') {
     page = (
-      <PerfilPage
-        user={user}
-        profile={profile}
-        deviceType={deviceType}
-        visualMode={visualMode}
+      <EditablePage
+        pageKey="perfil"
+        fallback={
+          <PerfilPage user={user} profile={profile} deviceType={deviceType} visualMode={visualMode} />
+        }
       />
     );
   }

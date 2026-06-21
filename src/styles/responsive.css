@@ -153,3 +153,16 @@
     transform-origin: center center;
   }
 }
+
+/* Tablet: layout intermedio — evita la columna única que desperdicia espacio */
+@media (min-width: 761px) and (max-width: 1180px) {
+  .page-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .page-grid.two-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hero-panel {
+    grid-column: 1 / -1;
+  }
+}
