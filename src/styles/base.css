@@ -1359,7 +1359,7 @@ body {
   display: grid;
   grid-template-columns: 100px minmax(0, 1fr) minmax(0, 160px);
   align-items: center;
-  min-height: 260px;
+  min-height: clamp(170px, 22vh, 260px);
 }
 .circle-icon {
   display: grid;
@@ -1383,7 +1383,7 @@ body {
 }
 .welcome-panel h3 {
   max-width: 400px;
-  font-size: 31px;
+  font-size: clamp(20px, 2.4vw, 31px);
   line-height: 1.12;
 }
 .welcome-panel strong {
@@ -1402,7 +1402,7 @@ body {
     linear-gradient(140deg, transparent 0 38%, rgba(0,69,54,.16) 39% 44%, transparent 45%);
 }
 .learning-route h3 {
-  font-size: 22px;
+  font-size: clamp(17px, 1.7vw, 22px);
 }
 .route-steps {
   display: grid;
@@ -1428,13 +1428,13 @@ body {
 }
 .route-icon {
   display: grid;
-  width: 116px;
-  height: 116px;
+  width: clamp(60px, 7vw, 116px);
+  height: clamp(60px, 7vw, 116px);
   place-items: center;
   border: 1px solid var(--approved-line);
   border-radius: 8px;
   color: var(--approved-green-900);
-  font-size: 44px;
+  font-size: clamp(26px, 3.4vw, 44px);
 }
 .route-step small {
   color: var(--approved-muted);
@@ -1456,8 +1456,8 @@ body {
 .approved-card {
   display: grid;
   gap: 10px;
-  min-height: 206px;
-  padding: 22px;
+  min-height: clamp(140px, 17vh, 206px);
+  padding: clamp(14px, 1.6vw, 22px);
 }
 .approved-card button,
 .records-panel button,
