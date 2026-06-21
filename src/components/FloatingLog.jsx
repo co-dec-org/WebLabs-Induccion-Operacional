@@ -15,14 +15,17 @@ export function FloatingLog({ route, user, onSaved }) {
 
   useEffect(() => {
     function onMove(event) {
-      if (!drag.current) return;
-      setPos({
-        x: drag.current.baseX + (event.clientX - drag.current.startX),
-        y: drag.current.baseY + (event.clientY - drag.current.startY),
-      });
+      const d = drag.current;
+      if (!d) return;
+      const dx = event.clientX - d.startX;
+      const dy = event.clientY - d.startY;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) d.moved = true;
+      setPos({ x: d.baseX + dx, y: d.baseY + dy });
     }
     function onUp() {
+      const d = drag.current;
       drag.current = null;
+      if (d && d.mode === 'launcher' && !d.moved) setOpen(true);
     }
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
@@ -32,10 +35,9 @@ export function FloatingLog({ route, user, onSaved }) {
     };
   }, []);
 
-  function startDrag(event) {
-    // No arrastrar si se hace clic en un botón del encabezado.
-    if (event.target.closest && event.target.closest('button')) return;
-    drag.current = { startX: event.clientX, startY: event.clientY, baseX: pos.x, baseY: pos.y };
+  function startDrag(mode, event) {
+    if (mode === 'panel' && event.target.closest && event.target.closest('button')) return;
+    drag.current = { startX: event.clientX, startY: event.clientY, baseX: pos.x, baseY: pos.y, moved: false, mode };
     event.preventDefault();
   }
 
@@ -44,7 +46,6 @@ export function FloatingLog({ route, user, onSaved }) {
       setStatus('Ingrese una nota antes de guardar.');
       return;
     }
-
     try {
       await saveContextualNote({
         userId: user?.id,
@@ -61,10 +62,16 @@ export function FloatingLog({ route, user, onSaved }) {
     }
   }
 
+  const posStyle = { transform: `translate(${pos.x}px, ${pos.y}px)` };
+
   if (!open) {
     return (
-      <aside className="floating-log collapsed">
-        <button className="floating-log-launcher" onClick={() => setOpen(true)}>
+      <aside className="floating-log collapsed" style={posStyle}>
+        <button
+          className="floating-log-launcher"
+          style={{ cursor: 'grab' }}
+          onMouseDown={(event) => startDrag('launcher', event)}
+        >
           Notas
         </button>
       </aside>
@@ -72,18 +79,15 @@ export function FloatingLog({ route, user, onSaved }) {
   }
 
   return (
-    <aside
-      className={`floating-log ${large ? 'large' : 'compact'}`}
-      style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
-    >
-      <header onMouseDown={startDrag} style={{ cursor: 'move', userSelect: 'none' }}>
+    <aside className={`floating-log ${large ? 'large' : 'compact'}`} style={posStyle}>
+      <header onMouseDown={(event) => startDrag('panel', event)} style={{ cursor: 'move', userSelect: 'none' }}>
         <div>
           <span>Notas contextuales · ⠿ arrastra</span>
           <strong>{routeLabel(route)}</strong>
         </div>
         <div className="floating-log-actions">
           <button onClick={() => setLarge(!large)}>{large ? 'Achicar' : 'Agrandar'}</button>
-          <button onClick={() => { setOpen(false); setPos({ x: 0, y: 0 }); }}>Minimizar</button>
+          <button onClick={() => setOpen(false)}>Minimizar</button>
         </div>
       </header>
       <label>
