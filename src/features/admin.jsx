@@ -43,6 +43,14 @@ const TEXT_FIELDS = [
   { key: 'body', label: 'Texto' },
 ];
 
+const BLOCK_TYPES = [
+  { value: 'hero', label: 'Portada (Hero)' },
+  { value: 'titulo', label: 'Título' },
+  { value: 'tarjeta', label: 'Tarjeta' },
+  { value: 'acordeon', label: 'Acordeón' },
+  { value: 'cta', label: 'Llamado a acción (CTA)' },
+];
+
 function newId() {
   return (globalThis.crypto && crypto.randomUUID)
     ? crypto.randomUUID()
@@ -139,6 +147,9 @@ export function AdminContentPage({ user }) {
   function setProp(idx, key, value) {
     setBlocks((bs) => bs.map((b, i) => (i === idx ? { ...b, props: { ...b.props, [key]: value } } : b)));
   }
+  function setType(idx, value) {
+    setBlocks((bs) => bs.map((b, i) => (i === idx ? { ...b, block_type: value } : b)));
+  }
   function toggleVisible(idx) {
     setBlocks((bs) => bs.map((b, i) => (i === idx ? { ...b, is_visible: !b.is_visible } : b)));
   }
@@ -209,7 +220,14 @@ export function AdminContentPage({ user }) {
             blocks.map((b, idx) => (
               <div key={b.id} style={box}>
                 <div style={{ ...row, justifyContent: 'space-between', marginBottom: 10 }}>
-                  <strong>#{idx + 1} · {b.block_type}</strong>
+                  <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <strong>#{idx + 1}</strong>
+                    <select value={b.block_type} onChange={(e) => setType(idx, e.target.value)} style={{ padding: '4px 6px' }}>
+                      {BLOCK_TYPES.map((t) => (
+                        <option key={t.value} value={t.value}>{t.label}</option>
+                      ))}
+                    </select>
+                  </span>
                   <span style={row}>
                     <button className="ghost-button" onClick={() => move(idx, -1)} disabled={idx === 0}>↑</button>
                     <button className="ghost-button" onClick={() => move(idx, 1)} disabled={idx === blocks.length - 1}>↓</button>
@@ -229,6 +247,12 @@ export function AdminContentPage({ user }) {
                     )}
                   </label>
                 ))}
+                {b.block_type === 'cta' ? (
+                  <label style={{ display: 'block', marginBottom: 8 }}>
+                    <span style={{ fontSize: 13, color: 'var(--muted)' }}>Texto del botón</span>
+                    <input style={input} value={b.props.buttonLabel || ''} onChange={(e) => setProp(idx, 'buttonLabel', e.target.value)} />
+                  </label>
+                ) : null}
               </div>
             ))
           )}
