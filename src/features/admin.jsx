@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getPageContent, listSitePages, getLatestDraft, saveDraft, publishPage, listPageVersions, restoreVersion } from '../lib/dmtApi.js';
-import { BlockRenderer } from '../components/blocks.jsx';
+import { ResponsivePreview } from '../components/blocks.jsx';
 
 export function AdminAccountsPage() {
   return (
@@ -211,7 +211,7 @@ export function AdminContentPage({ user }) {
       </article>
 
       {preview ? (
-        <BlockRenderer blocks={blocks.filter((b) => b.is_visible !== false)} />
+        <ResponsivePreview blocks={blocks.filter((b) => b.is_visible !== false)} />
       ) : (
         <div>
           {blocks.length === 0 ? (

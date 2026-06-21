@@ -1,5 +1,5 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getPageContent } from '../lib/dmtApi.js';
 
 // ===== Biblioteca de bloques — reutilizan el CSS aprobado y son responsive =====
@@ -109,4 +109,71 @@ export function EditablePage({ pageKey, fallback }) {
   if (!hasRealContent) return fallback;
 
   return <BlockRenderer blocks={visibles} />;
+}
+
+
+// ===== Preview responsive: iframe por perfil de pantalla =====
+// Usa un iframe con el ancho de cada perfil para que las @media queries
+// del CSS respondan de verdad (un contenedor no dispara media queries).
+const SCREEN_PROFILES = [
+  { key: 'phone', label: 'Phone', w: 390 },
+  { key: 'tablet', label: 'Tablet', w: 768 },
+  { key: 'desktop', label: 'Desktop', w: 1180 },
+  { key: 'desktophd', label: 'Desktop HD', w: 1440 },
+];
+
+export function ResponsivePreview({ blocks }) {
+  const [profile, setProfile] = useState('desktop');
+  const [theme, setTheme] = useState('boldo');
+  const hiddenRef = useRef(null);
+  const [srcDoc, setSrcDoc] = useState('');
+
+  useEffect(() => {
+    const styleTags = Array.from(document.querySelectorAll('style'))
+      .map((s) => s.textContent)
+      .join('\n');
+    const linkTags = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+      .map((l) => `<link rel="stylesheet" href="${l.href}">`)
+      .join('');
+    const inner = hiddenRef.current ? hiddenRef.current.innerHTML : '';
+    setSrcDoc(
+      `<!doctype html><html><head><meta charset="utf-8">${linkTags}` +
+      `<style>${styleTags}\nbody{margin:0;background:var(--surface);} .preview-pad{padding:18px;}</style>` +
+      `</head><body class="theme-${theme}"><div class="preview-pad">${inner}</div></body></html>`
+    );
+  }, [blocks, theme, profile]);
+
+  const width = (SCREEN_PROFILES.find((p) => p.key === profile) || {}).w || 1180;
+  const tabBtn = (active) => (active ? '' : 'ghost-button');
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 13, color: 'var(--muted)' }}>Pantalla:</span>
+        {SCREEN_PROFILES.map((p) => (
+          <button key={p.key} className={tabBtn(profile === p.key)} onClick={() => setProfile(p.key)}>
+            {p.label}
+          </button>
+        ))}
+        <span style={{ fontSize: 13, color: 'var(--muted)', marginLeft: 12 }}>Tema:</span>
+        <button className={tabBtn(theme === 'boldo')} onClick={() => setTheme('boldo')}>Boldo</button>
+        <button className={tabBtn(theme === 'ambar')} onClick={() => setTheme('ambar')}>Ámbar</button>
+      </div>
+
+      <div ref={hiddenRef} aria-hidden="true" style={{ position: 'absolute', left: -99999, top: 0, width: 1180, visibility: 'hidden' }}>
+        <BlockRenderer blocks={blocks} />
+      </div>
+
+      <div style={{ overflowX: 'auto', border: '1px solid var(--line)', borderRadius: 12, background: 'var(--surface)' }}>
+        <iframe
+          title="Vista previa responsive"
+          srcDoc={srcDoc}
+          style={{ width, height: 640, maxWidth: '100%', border: 0, display: 'block', margin: '0 auto' }}
+        />
+      </div>
+      <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>
+        Vista a {width}px. En Phone/Tablet las tarjetas se apilan; en Desktop van en fila.
+      </p>
+    </div>
+  );
 }
