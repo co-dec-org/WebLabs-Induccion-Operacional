@@ -151,33 +151,69 @@ function buildModels(vals, trans) {
   return { visitas: vis, tiempo: tie, indice: ind, recorridos: rec };
 }
 
-function startDashboard(root, visualMode, models) {
+function drawViz(key, model, ctx, W, H, now, dt, AC, spr) {
+  ctx.clearRect(0, 0, W, H); ctx.fillStyle = PANEL; ctx.fillRect(0, 0, W, H);
+  if (key === 'visitas') drawVisitas(model.visitas, ctx, W, H, now, AC, spr);
+  else if (key === 'tiempo') drawTiempo(model.tiempo, ctx, W, H, now, AC, spr);
+  else if (key === 'indice') drawIndice(model.indice, ctx, W, H, now, AC, spr);
+  else if (key === 'recorridos') drawRec(model.recorridos, ctx, W, H, now, dt, AC, spr);
+}
+
+function startDashboard(root, visualMode, models, selectedRef) {
   const AC = ACCENTS[visualMode] || ACCENTS.boldo;
   const spr = buildSprites(AC);
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const canvases = Array.prototype.slice.call(root.querySelectorAll('canvas[data-viz]')).map((cv) => ({ cv, ctx: cv.getContext('2d'), key: cv.getAttribute('data-viz') }));
-  function size() { canvases.forEach((o) => { o.W = o.cv.clientWidth; o.H = o.cv.clientHeight; o.cv.width = Math.round(o.W * dpr); o.cv.height = Math.round(o.H * dpr); o.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }); }
+  const minis = Array.prototype.slice.call(root.querySelectorAll('canvas[data-viz]')).map((cv) => ({ cv, ctx: cv.getContext('2d'), key: cv.getAttribute('data-viz') }));
+  const bigEl = root.querySelector('canvas[data-feature]');
+  const big = bigEl ? { cv: bigEl, ctx: bigEl.getContext('2d') } : null;
+  const all = big ? minis.concat([big]) : minis;
+  function size() { all.forEach((o) => { o.W = o.cv.clientWidth; o.H = o.cv.clientHeight; o.cv.width = Math.round(o.W * dpr); o.cv.height = Math.round(o.H * dpr); o.ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }); }
   size();
   window.addEventListener('resize', size);
   let raf = 0, last = 0, stopped = false;
   function loop(now) {
     if (stopped) return;
     if (!last) last = now; const dt = Math.min(48, now - last); last = now;
-    canvases.forEach((o) => {
-      const ctx = o.ctx; ctx.clearRect(0, 0, o.W, o.H); ctx.fillStyle = PANEL; ctx.fillRect(0, 0, o.W, o.H);
-      if (o.key === 'visitas') drawVisitas(models.visitas, ctx, o.W, o.H, now, AC, spr);
-      else if (o.key === 'tiempo') drawTiempo(models.tiempo, ctx, o.W, o.H, now, AC, spr);
-      else if (o.key === 'indice') drawIndice(models.indice, ctx, o.W, o.H, now, AC, spr);
-      else if (o.key === 'recorridos') drawRec(models.recorridos, ctx, o.W, o.H, now, dt, AC, spr);
-    });
+    minis.forEach((o) => drawViz(o.key, models, o.ctx, o.W, o.H, now, dt, AC, spr));
+    if (big) drawViz((selectedRef && selectedRef.current) || 'visitas', models, big.ctx, big.W, big.H, now, dt, AC, spr);
     raf = requestAnimationFrame(loop);
   }
   raf = requestAnimationFrame(loop);
   return function cleanup() { stopped = true; cancelAnimationFrame(raf); window.removeEventListener('resize', size); };
 }
 
+const DESC = {
+  visitas: 'Cuántas veces se abre cada página (atención por contenido).',
+  tiempo: 'Segundos por visita: profundidad de uso / permanencia real.',
+  indice: 'Índice compuesto aD_ = visitas × tiempo (valor del activo digital).',
+  recorridos: 'Flujo entre páginas: adherencia a la ruta lógica y desvíos (coral).',
+};
+
+function breakdown(key, vals, trans) {
+  if (key === 'recorridos') {
+    return trans.slice().sort((a, b) => b.w - a.w).slice(0, 6).map((x) => {
+      const dn = (PAGES.find((p) => p.key === x.d) || {}).name || x.d;
+      const hn = (PAGES.find((p) => p.key === x.h) || {}).name || x.h;
+      const dev = !SPINE.some((e) => e[0] === x.d && e[1] === x.h);
+      return { label: dn + ' → ' + hn, value: String(x.w), dev };
+    });
+  }
+  const rows = PAGES.map((p) => {
+    const v = vals[p.key].v, t = vals[p.key].t;
+    let n, suf;
+    if (key === 'tiempo') { n = t; suf = ' s'; }
+    else if (key === 'indice') { n = Math.round((v * t) / 100); suf = ' aD_'; }
+    else { n = v; suf = ''; }
+    return { label: p.name, n, value: String(n) + suf, dev: false };
+  });
+  rows.sort((a, b) => b.n - a.n);
+  return rows;
+}
+
 export function SupervisionPage({ visualMode = 'boldo' }) {
   const rootRef = useRef(null);
+  const selectedRef = useRef('visitas');
+  const [selected, setSelected] = useState('visitas');
   const [st, setSt] = useState({ loading: true, real: false, vals: null, trans: null, totals: null });
 
   useEffect(() => {
@@ -210,7 +246,7 @@ export function SupervisionPage({ visualMode = 'boldo' }) {
   useEffect(() => {
     if (st.loading || !st.vals || !rootRef.current) return;
     const models = buildModels(st.vals, st.trans);
-    const cleanup = startDashboard(rootRef.current, visualMode, models);
+    const cleanup = startDashboard(rootRef.current, visualMode, models, selectedRef);
     return cleanup;
   }, [st, visualMode]);
 
@@ -221,33 +257,53 @@ export function SupervisionPage({ visualMode = 'boldo' }) {
     { key: 'indice', name: 'Índice compuesto', value: t.totInd != null ? String(t.totInd) : '—', unit: 'aD_' },
     { key: 'recorridos', name: 'Recorridos', value: t.pctRuta != null ? t.pctRuta + '%' : '—', unit: 'sigue la ruta' },
   ];
+  const sel = cards.find((c) => c.key === selected) || cards[0];
+  const rows = st.vals ? breakdown(selected, st.vals, st.trans || []) : [];
+  function pick(key) { selectedRef.current = key; setSelected(key); }
 
   return (
-    <div style={{ padding: '8px 4px' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Tablero Constelar · navegación</h2>
-          <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.7 }}>
-            Analítica de navegación anónima (Ley 21.719){' '}
-            {st.loading ? '· cargando…' : st.real ? '· datos reales' : '· datos de muestra (aún no hay trazas)'}
-          </p>
+    <div ref={rootRef} style={{ padding: '8px 4px' }}>
+      <div style={{ marginBottom: 12 }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Tablero Constelar · navegación</h2>
+        <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.7 }}>
+          Analítica de navegación anónima (Ley 21.719){' '}
+          {st.loading ? '· cargando…' : st.real ? '· datos reales' : '· datos de muestra (aún no hay trazas)'}
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 12, marginBottom: 12 }}>
+        <div style={{ background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(12,48,37,.16)', borderRadius: 12, padding: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+            <div style={{ fontSize: 15, fontWeight: 600 }}>{sel.name}</div>
+            <div style={{ fontSize: 20, fontWeight: 600 }}>{sel.value} <span style={{ fontSize: 11, opacity: 0.6 }}>{sel.unit}</span></div>
+          </div>
+          <div style={{ position: 'relative', borderRadius: 9, overflow: 'hidden', background: PANEL }}>
+            <canvas data-feature="1" style={{ display: 'block', width: '100%', height: 320 }} />
+          </div>
+          <p style={{ margin: '8px 0 0', fontSize: 12, opacity: 0.7 }}>{DESC[selected]}</p>
+        </div>
+        <div style={{ background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(12,48,37,.16)', borderRadius: 12, padding: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.8, marginBottom: 6 }}>Detalle por página</div>
+          {rows.map((r, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, padding: '5px 0', borderBottom: '0.5px solid rgba(12,48,37,.08)', fontSize: 13 }}>
+              <span style={{ color: r.dev ? DEV : 'inherit' }}>{r.label}</span>
+              <span style={{ fontWeight: 600 }}>{r.value}</span>
+            </div>
+          ))}
         </div>
       </div>
-      <div ref={rootRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
         {cards.map((c) => (
-          <div key={c.key} style={{ background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(12,48,37,.16)', borderRadius: 12, padding: 11, display: 'flex', flexDirection: 'column', gap: 9 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-              <div>
-                <div style={{ fontSize: 13, opacity: 0.65 }}>{c.name}</div>
-                <div style={{ fontSize: 19, fontWeight: 600 }}>
-                  {c.value} <span style={{ fontSize: 11, opacity: 0.6 }}>{c.unit}</span>
-                </div>
-              </div>
+          <button key={c.key} type="button" onClick={() => pick(c.key)} style={{ textAlign: 'left', cursor: 'pointer', font: 'inherit', color: 'inherit', background: selected === c.key ? 'rgba(11,91,72,0.10)' : 'rgba(0,0,0,0.04)', border: selected === c.key ? '1px solid rgba(11,91,72,0.5)' : '0.5px solid rgba(12,48,37,.16)', borderRadius: 12, padding: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div>
+              <div style={{ fontSize: 12, opacity: 0.65 }}>{c.name}</div>
+              <div style={{ fontSize: 17, fontWeight: 600 }}>{c.value} <span style={{ fontSize: 10, opacity: 0.6 }}>{c.unit}</span></div>
             </div>
-            <div style={{ position: 'relative', borderRadius: 9, overflow: 'hidden', background: PANEL }}>
-              <canvas data-viz={c.key} style={{ display: 'block', width: '100%', height: 200 }} />
+            <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: PANEL }}>
+              <canvas data-viz={c.key} style={{ display: 'block', width: '100%', height: 90 }} />
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>
