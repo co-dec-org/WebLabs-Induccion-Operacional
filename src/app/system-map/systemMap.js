@@ -9,7 +9,7 @@ export const pageStatus = {
   recursos: 'enabled',
   perfil: 'enabled',
   simulaciones: 'disabled',
-  supervision: 'disabled',
+  supervision: 'enabled',
   admin: 'enabled',
   editor_visual: 'enabled',
 };

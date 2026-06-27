@@ -8,6 +8,7 @@ import { DisabledPage, RestrictedPage } from './components/gates.jsx';
 import { AdminAccountsPage, AdminContentPage } from './features/admin.jsx';
 import { LoginPage, PasswordChangePage, ProfileValidationPage } from './features/auth.jsx';
 import { InduccionPage } from './features/induccion.jsx';
+import { SupervisionPage } from './features/supervision.jsx';
 import { BitacoraPage, HomePage, MarcoLegalPage, PerfilPage, RecursosPage } from './features/pages.jsx';
 import { getCurrentSession, getProfile, listContextualNotes, saveVisualPreference, signInWithInstitutionalEmail, signOut } from './lib/dmtApi.js';
 import { getDeviceType, getRole, getRoute } from './lib/uiHelpers.js';
@@ -176,6 +177,7 @@ function App() {
   }
   if (route === '/admin-cuentas') page = <AdminAccountsPage />;
   if (route === '/admin-contenidos') page = <AdminContentPage user={user} />;
+  if (route === '/supervision') page = <SupervisionPage visualMode={visualMode} />;
 
   // Gates sistemáticos (la sesión ya se validó arriba):
   //  - PageStatusGate: una página 'disabled' no es accesible ni por URL directa.
