@@ -26,3 +26,21 @@ dist/
 *.log
 .idea/
 .vscode/
+
+# === Documentos de trabajo Cowork (NO versionar en el repo) ===
+# Viven junto al repo en la carpeta de Google Drive, pero no pertenecen al código.
+ANALITICA_NAVEGACION.md
+HISTORIAL_PROYECTO.md
+INDICADORES_CONSTELAR.md
+REFERENCIA_VISUAL_NEBULOSA.md
+REMEDIACION_LISTA.md
+VERIFICACION_FASE0.md
+FASE1_CAMBIOS.md
+FASE3_EDITOR_PASO1.md
+INFORME_AVANCE_*.md
+gitignore_propuesto.txt
+Traspaso/
+Capturas iPad/
+
+# === Referencias iStock (marca de agua / derechos): NUNCA subir al repo ===
+Referencias/
