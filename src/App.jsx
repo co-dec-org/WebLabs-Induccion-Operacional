@@ -11,6 +11,7 @@ import { InduccionPage } from './features/induccion.jsx';
 import { BitacoraPage, HomePage, MarcoLegalPage, PerfilPage, RecursosPage } from './features/pages.jsx';
 import { getCurrentSession, getProfile, listContextualNotes, saveVisualPreference, signInWithInstitutionalEmail, signOut } from './lib/dmtApi.js';
 import { getDeviceType, getRole, getRoute } from './lib/uiHelpers.js';
+import { trackLeave, trackView } from './lib/navTrace.js';
 
 function App() {
   const [route, setRoute] = useState(getRoute);
@@ -49,6 +50,41 @@ function App() {
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
+
+  // Telemetría de navegación ANÓNIMA (Ley 21.719: sin PII). Best-effort: si falla,
+  // nunca afecta la UI. Registra 'leave' de la ruta previa y 'view' de la nueva.
+  const navPrevRouteRef = React.useRef(null);
+  const navEnterAtRef = React.useRef(Date.now());
+
+  useEffect(() => {
+    if (!user || route === '/login') return;
+    const ctx = { deviceType, theme: visualMode, role };
+    const prev = navPrevRouteRef.current;
+    const now = Date.now();
+    if (prev && prev !== route) {
+      trackLeave({ route: prev, durationMs: now - navEnterAtRef.current, ...ctx });
+    }
+    trackView({ route, referrerRoute: prev, ...ctx });
+    navPrevRouteRef.current = route;
+    navEnterAtRef.current = now;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route, user]);
+
+  useEffect(() => {
+    function onUnload() {
+      if (!user || !navPrevRouteRef.current) return;
+      trackLeave({
+        route: navPrevRouteRef.current,
+        durationMs: Date.now() - navEnterAtRef.current,
+        deviceType,
+        theme: visualMode,
+        role,
+      });
+    }
+    window.addEventListener('beforeunload', onUnload);
+    return () => window.removeEventListener('beforeunload', onUnload);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, visualMode, role, deviceType]);
 
   useEffect(() => {
     if (!user?.id) {
