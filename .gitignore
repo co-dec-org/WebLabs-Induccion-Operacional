@@ -27,18 +27,18 @@ dist/
 .idea/
 .vscode/
 
-# === Documentos de trabajo Cowork (NO versionar en el repo) ===
-# Viven junto al repo en la carpeta de Google Drive, pero no pertenecen al código.
-ANALITICA_NAVEGACION.md
-HISTORIAL_PROYECTO.md
-INDICADORES_CONSTELAR.md
-REFERENCIA_VISUAL_NEBULOSA.md
-REMEDIACION_LISTA.md
-VERIFICACION_FASE0.md
-FASE1_CAMBIOS.md
-FASE3_EDITOR_PASO1.md
-INFORME_AVANCE_*.md
-gitignore_propuesto.txt
+# === Documentos .md = fuente versionada (van en git, en docs/) ===
+# Los .md son la fuente editable; sus exportaciones .docx/.pdf viven en Drive.
+
+# === Exportaciones de oficina → Drive (NO versionar; salvo binarios que sirve la app en /public) ===
+/*.docx
+/*.pdf
+/*.pptx
+docs/*.docx
+docs/*.pdf
+docs/*.pptx
+
+# === Material complementario → Drive (NO versionar) ===
 Traspaso/
 Capturas iPad/
 
