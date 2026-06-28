@@ -231,9 +231,12 @@ export function SupervisionPage({ visualMode = 'boldo' }) {
         const trans = (real && tr && tr.length)
           ? tr.map((x) => ({ d: ROUTE_TO_KEY[x.desde], h: ROUTE_TO_KEY[x.hacia], w: x.veces })).filter((x) => x.d && x.h)
           : SAMPLE_TR;
-        const totVis = real ? (res.visitas || 0) : PAGES.reduce((s, p) => s + SAMPLE[p.key].v, 0);
-        const totTie = real ? (res.tiempoMedioS || 0) : 52;
-        const totInd = real ? (res.indiceTotal || 0) : 488;
+        // Totales SOLO de las 6 páginas formativas (excluye supervision/admin, internas),
+        // para que las tarjetas cuadren con las visualizaciones.
+        const totVis = PAGES.reduce((s, p) => s + vals[p.key].v, 0);
+        const withT = PAGES.filter((p) => vals[p.key].v > 0 && vals[p.key].t > 0);
+        const totTie = withT.length ? Math.round(withT.reduce((s, p) => s + vals[p.key].t, 0) / withT.length) : 0;
+        const totInd = PAGES.reduce((s, p) => s + Math.round((vals[p.key].v * vals[p.key].t) / 100), 0);
         const totW = trans.reduce((s, x) => s + x.w, 0) || 1;
         const ruta = trans.filter((x) => SPINE.some((e) => e[0] === x.d && e[1] === x.h)).reduce((s, x) => s + x.w, 0);
         const pctRuta = Math.round((ruta / totW) * 100);
