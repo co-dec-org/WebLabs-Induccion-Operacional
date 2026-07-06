@@ -191,38 +191,61 @@
   }
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   3 TIERS — el contenido no se quiebra en ningún dispositivo/orientación.
-   TABLET + TELÉFONO (≤1366px): iPad vertical (768) y horizontal (1024–1366)
-   y móvil. El escritorio (≥1367px) conserva el layout amplio.
-   ───────────────────────────────────────────────────────────────────────── */
-@media (max-width: 1366px) {
-  /* Bienvenida y ruta apiladas: el texto recupera todo el ancho (no cae
-     "palabra por palabra"). */
-  .home-top-grid {
-    grid-template-columns: 1fr;
-  }
+/* ═══════════════════════════════════════════════════════════════════════════
+   3 TIERS RESPONSIVE — el contenido no se quiebra ni se corta en ningún
+   dispositivo/orientación. Escritorio (≥1367px) conserva el layout amplio.
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-  /* Panel de bienvenida: solo icono + texto; se oculta la ilustración lateral
-     que robaba ancho al texto. */
+/* ── TABLET / iPad (701–1366px): Inicio compacta, todo visible sin scroll.
+   Bienvenida + ruta lado a lado (ahorra alto), tarjetas en una fila, y el
+   bloque inferior condensado a una tira delgada. ─────────────────────────── */
+@media (min-width: 701px) and (max-width: 1366px) {
+  .home-approved { gap: 12px; }
+
+  /* Bienvenida + ruta lado a lado */
+  .home-top-grid { grid-template-columns: 1.15fr 1fr; gap: 12px; }
+
+  /* Bienvenida compacta: icono + texto (sin ilustración) */
   .welcome-panel {
-    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 12px;
+    min-height: 0;
+    padding: 12px 14px;
   }
+  .welcome-panel .panel-illustration { display: none; }
+  .welcome-panel h3 { max-width: none; font-size: 16px; line-height: 1.15; }
+  .home-approved .circle-icon { width: 46px; height: 46px; font-size: 22px; }
 
-  .welcome-panel .panel-illustration {
-    display: none;
-  }
+  /* Ruta: 4 pasos en fila, compactos */
+  .learning-route { padding: 12px 14px; }
+  .learning-route h3 { font-size: 14px; }
+  .route-steps { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .route-icon { width: 38px; height: 38px; font-size: 18px; }
+  .route-step > span { width: 22px; height: 22px; }
 
-  .welcome-panel h3 {
-    max-width: none;
-  }
+  /* 4 tarjetas de módulos en una fila, sin la descripción larga */
+  .home-card-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 0; }
+  .approved-card { min-height: 0; padding: 10px; gap: 6px; }
+  .approved-card p { display: none; }
+  .home-approved .circle-icon.small { width: 38px; height: 38px; font-size: 20px; }
 
-  /* Tarjetas y ruta con mínimos más chicos para que fluyan sin apretar. */
-  .home-card-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
+  /* Bloque inferior condensado a tira delgada (opción B): solo el título */
+  .home-bottom-grid { gap: 10px; }
+  .evidence-summary,
+  .privacy-reminder { padding: 9px 12px; align-items: center; }
+  .evidence-summary h3,
+  .privacy-reminder h3 { font-size: 12px; margin: 0; line-height: 1.25; }
+  .evidence-summary p,
+  .evidence-summary > div,
+  .privacy-reminder p { display: none; }
+  .privacy-reminder .circle-icon { width: 30px; height: 30px; font-size: 16px; }
+}
 
-  .route-steps {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  }
+/* ── TELÉFONO (≤700px): todo apilado y compacto ─────────────────────────── */
+@media (max-width: 700px) {
+  .home-top-grid { grid-template-columns: 1fr; }
+  .home-card-grid { grid-template-columns: repeat(2, 1fr); }
+  .welcome-panel { grid-template-columns: 44px minmax(0, 1fr); }
+  .welcome-panel .panel-illustration { display: none; }
+  .welcome-panel h3 { max-width: none; }
 }
