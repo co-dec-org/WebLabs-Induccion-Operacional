@@ -190,3 +190,39 @@
     position: fixed;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   3 TIERS — el contenido no se quiebra en ningún dispositivo/orientación.
+   TABLET + TELÉFONO (≤1366px): iPad vertical (768) y horizontal (1024–1366)
+   y móvil. El escritorio (≥1367px) conserva el layout amplio.
+   ───────────────────────────────────────────────────────────────────────── */
+@media (max-width: 1366px) {
+  /* Bienvenida y ruta apiladas: el texto recupera todo el ancho (no cae
+     "palabra por palabra"). */
+  .home-top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Panel de bienvenida: solo icono + texto; se oculta la ilustración lateral
+     que robaba ancho al texto. */
+  .welcome-panel {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  .welcome-panel .panel-illustration {
+    display: none;
+  }
+
+  .welcome-panel h3 {
+    max-width: none;
+  }
+
+  /* Tarjetas y ruta con mínimos más chicos para que fluyan sin apretar. */
+  .home-card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .route-steps {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}
