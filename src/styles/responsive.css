@@ -258,12 +258,18 @@
   .route-step strong { font-size: clamp(10px, 5cqh, 13px); }
   .route-step small { font-size: clamp(9px, 4.5cqh, 12px); }
 
-  /* Tarjetas */
-  .approved-card { padding: clamp(8px, 5cqh, 16px); gap: clamp(4px, 2cqh, 8px); }
+  /* Tarjetas: flex-column con el botón anclado abajo; la descripción se acota
+     (line-clamp) y encoge, de modo que el botón nunca se corta aunque la caja
+     sea baja. */
+  .approved-card { display: flex; flex-direction: column; padding: clamp(8px, 5cqh, 16px); gap: clamp(4px, 2cqh, 8px); }
   .approved-card .circle-icon.small { width: clamp(26px, 16cqh, 44px); height: clamp(26px, 16cqh, 44px); font-size: clamp(15px, 9cqh, 22px); }
   .approved-card h4 { margin: 0; font-size: clamp(11px, 8cqh, 15px); }
-  .approved-card p { margin: 0; font-size: clamp(10px, 5cqh, 12px); line-height: 1.2; }
-  .approved-card button { font-size: clamp(11px, 6cqh, 14px); }
+  .approved-card p {
+    margin: 0; font-size: clamp(10px, 5cqh, 12px); line-height: 1.2;
+    flex: 1 1 auto; min-height: 0; overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
+  .approved-card button { flex: none; margin-top: auto; font-size: clamp(11px, 6cqh, 14px); }
 
   /* Tira inferior (títulos slim) */
   .home-bottom-grid { grid-template-columns: 1fr 1fr; }
@@ -275,20 +281,26 @@
 
 /* Orientación: horizontal = lado a lado / vertical = apilado */
 @media (min-width: 701px) and (orientation: landscape) {
-  .home-top-grid { grid-template-columns: 1.25fr 1fr; }
-  .home-card-grid { grid-template-columns: repeat(4, 1fr); }
+  /* !important vence la regla desktop legada `.home-card-grid { auto-fit(220px) }`
+     de base.css (misma especificidad, pero gana en la cascada del bundle). */
+  .home-top-grid { grid-template-columns: 1.25fr 1fr !important; }
+  .home-card-grid { grid-template-columns: repeat(4, 1fr) !important; }
   .route-steps { grid-template-columns: repeat(4, 1fr); }
 }
 @media (min-width: 701px) and (orientation: portrait) {
-  .home-top-grid { grid-template-columns: 1fr; grid-auto-rows: minmax(0, 1fr); }
-  .home-card-grid { grid-template-columns: repeat(2, 1fr); }
-  .route-steps { grid-template-columns: repeat(2, 1fr); }
+  /* En vertical hay ancho completo (el menú es cajón): bienvenida y ruta van
+     lado a lado (compacto en alto) y las tarjetas reciben más alto para que
+     el botón entre. */
+  .home-approved { grid-template-rows: minmax(0, 0.8fr) minmax(0, 1.15fr) auto; }
+  .home-top-grid { grid-template-columns: 1.25fr 1fr !important; }
+  .home-card-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .route-steps { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* ── TELÉFONO (≤700px): apilado; el fit total del teléfono es incremento aparte ── */
 @media (max-width: 700px) {
-  .home-top-grid { grid-template-columns: 1fr; }
-  .home-card-grid { grid-template-columns: repeat(2, 1fr); }
+  .home-top-grid { grid-template-columns: 1fr !important; }
+  .home-card-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .welcome-panel { grid-template-columns: 44px minmax(0, 1fr); }
   .welcome-panel .panel-illustration { display: none; }
   .welcome-panel h3 { max-width: none; }
