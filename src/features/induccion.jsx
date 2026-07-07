@@ -1,7 +1,31 @@
 import React from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { modules } from '../data/modules.js';
 import { inductionMenu } from '../lib/uiConstants.js';
+
+// Escala la lámina de diseño (lienzo fijo 800×450) para que quepa exactamente
+// en su marco, sin deformar ni romper el contenido interno. Se recalcula cuando
+// el marco cambia de tamaño (viewport, orientación, layout).
+const SLIDE_W = 800;
+const SLIDE_H = 450;
+function useSlideScale() {
+  const frameRef = useRef(null);
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return undefined;
+    const apply = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      const scale = Math.min(w / SLIDE_W, h / SLIDE_H) || w / SLIDE_W;
+      el.style.setProperty('--deck-scale', String(scale));
+    };
+    apply();
+    const observer = new ResizeObserver(apply);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return frameRef;
+}
 
 export function WebSlide({ module }) {
   if (module.number === 7) {
@@ -76,6 +100,7 @@ export function InduccionPage({ done, setDone }) {
   const [active, setActive] = useState(1);
   const [query, setQuery] = useState('');
   const [isPresentationOpen, setIsPresentationOpen] = useState(false);
+  const deckFrameRef = useSlideScale();
 
   const activeModule = modules.find((module) => module.number === active) || modules[0];
   const filteredModules = useMemo(() => {
@@ -133,7 +158,7 @@ export function InduccionPage({ done, setDone }) {
               Modo presentación
             </button>
           </div>
-          <figure className="slide-frame deck-slide">
+          <figure className="slide-frame deck-slide" ref={deckFrameRef}>
             <WebSlide module={activeModule} />
           </figure>
           <div className="deck-controls">

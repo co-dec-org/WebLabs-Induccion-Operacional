@@ -1577,6 +1577,25 @@ body {
 .deck-slide {
   aspect-ratio: 16 / 9;
 }
+/* Visor: la lámina se renderiza en su lienzo de diseño (800×450) y se escala
+   con --deck-scale (calculado en JS por ResizeObserver) para caber exacta en el
+   marco, sin romper la tipografía interna. Solo afecta el visor (.slide-frame),
+   no las miniaturas ni el modo presentación. */
+.slide-frame {
+  place-items: center;
+}
+.slide-frame .web-slide {
+  width: 800px;
+  height: 450px;
+  transform: scale(var(--deck-scale, 1));
+  transform-origin: center center;
+}
+.slide-frame .web-slide h2 {
+  font-size: 46px;
+}
+.slide-frame .web-slide h3 {
+  font-size: 24px;
+}
 .web-slide {
   position: relative;
   width: 100%;

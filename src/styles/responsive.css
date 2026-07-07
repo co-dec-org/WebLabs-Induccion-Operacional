@@ -362,3 +362,56 @@
   /* Dejar aire para el botón ☰ fijo en la esquina */
   .top-bar { padding-left: 56px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INDUCCIÓN — fit-to-window. La lámina (visor) se escala por JS (--deck-scale)
+   para caber sin romperse. HORIZONTAL: visor + resumen en una sola pantalla,
+   sin scroll. VERTICAL / teléfono: apila (visor arriba, resumen abajo).
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 701px) and (orientation: landscape) {
+  .app-shell.route-induccion { height: 100dvh; overflow: hidden; }
+  .route-induccion .workspace {
+    height: 100dvh; min-height: 0; overflow: hidden;
+    display: flex; flex-direction: column;
+    gap: clamp(6px, 1.1vh, 12px);
+    padding: clamp(6px, 1vh, 14px) clamp(12px, 2vw, 26px) calc(56px + clamp(6px, 1.2vh, 10px));
+  }
+  .route-induccion .top-bar { flex: none; min-height: 0; padding-top: 6px; padding-bottom: clamp(4px, 0.8vh, 10px); }
+  .route-induccion .top-bar h2 { font-size: clamp(18px, 3.2vh, 30px); }
+
+  /* Dos columnas que llenan el alto: visor | resumen */
+  .route-induccion .induccion-layout {
+    flex: 1; min-height: 0; overflow: hidden; margin: 0;
+    grid-template-columns: minmax(0, 1fr) clamp(250px, 24vw, 330px) !important;
+    align-items: stretch;
+  }
+
+  /* Columna del visor: barra + lámina (flexible) + controles + miniaturas */
+  .route-induccion .deck-stage {
+    min-height: 0; overflow: hidden;
+    display: flex; flex-direction: column;
+    gap: clamp(6px, 1vh, 12px);
+  }
+  .route-induccion .deck-toolbar,
+  .route-induccion .deck-controls,
+  .route-induccion .thumbnail-strip { flex: none; }
+  .route-induccion .slide-frame.deck-slide {
+    aspect-ratio: auto !important; flex: 1; min-height: 0;
+  }
+
+  /* El resumen scrollea internamente si su contenido excede la caja */
+  .route-induccion .module-summary { min-height: 0; overflow: auto; }
+}
+
+/* VERTICAL / teléfono: una sola columna (visor arriba, resumen abajo).
+   Vence la regla desktop legada `.induccion-layout { 1fr 330px }` de base.css. */
+@media (max-width: 700px),
+       (min-width: 701px) and (max-width: 1180px) and (orientation: portrait) {
+  .route-induccion .induccion-layout { grid-template-columns: 1fr !important; }
+  .route-induccion .module-summary { grid-column: 1 !important; }
+}
+
+/* Teléfono: controles en 3 columnas iguales para que no se desborden */
+@media (max-width: 700px) {
+  .route-induccion .deck-controls { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
