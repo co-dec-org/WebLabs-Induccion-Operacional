@@ -426,11 +426,13 @@
    conserva las dos columnas. !important vence las reglas desktop legadas.
    ═══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 1180px) {
+  /* minmax(0,1fr) — no '1fr' — para que la columna pueda encoger por debajo del
+     contenido (evita que una tabla ancha desborde la página). */
   .bitacora-grid,
   .legal-grid,
   .resources-grid,
   .profile-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 16px;
   }
   /* Tarjetas internas: 2 columnas en tablet */
@@ -438,9 +440,14 @@
   .profile-card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
-  /* La tabla de Bitácora scrollea en horizontal si no cabe */
-  .records-panel { overflow-x: auto; }
+  /* Bitácora: la tabla scrollea DENTRO del panel sin forzar el ancho de la página */
+  .records-panel { overflow-x: auto; min-width: 0; }
   .records-panel table { min-width: 620px; }
+  /* Cabecera de Bitácora: icono + descripción, y los stats en fila que envuelve */
+  .summary-strip {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px;
+  }
+  .summary-strip > *:nth-child(2) { flex: 1 1 220px; }
 }
 
 @media (max-width: 700px) {
