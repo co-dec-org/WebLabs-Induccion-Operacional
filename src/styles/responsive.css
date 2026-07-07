@@ -415,3 +415,52 @@
 @media (max-width: 700px) {
   .route-induccion .deck-controls { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PÁGINAS DE CONTENIDO — Bitácora, Marco legal, Recursos, Perfil (fallbacks
+   hardcodeados) y bloques del editor. En tablet y teléfono los layouts de dos
+   columnas (principal + panel lateral fijo de 370–430px) apilan a una sola
+   columna para no comprimir el contenido; las grillas de tarjetas reducen
+   columnas y la tabla de Bitácora scrollea en horizontal. El contenido
+   scrollea de forma natural (no son páginas fit-to-window). Escritorio (≥1181)
+   conserva las dos columnas. !important vence las reglas desktop legadas.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1180px) {
+  .bitacora-grid,
+  .legal-grid,
+  .resources-grid,
+  .profile-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+  /* Tarjetas internas: 2 columnas en tablet */
+  .resource-grid,
+  .profile-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  /* La tabla de Bitácora scrollea en horizontal si no cabe */
+  .records-panel { overflow-x: auto; }
+  .records-panel table { min-width: 620px; }
+}
+
+@media (max-width: 700px) {
+  /* Teléfono: todo a una columna */
+  .page-grid { grid-template-columns: 1fr !important; }
+  .resource-grid,
+  .profile-card-grid,
+  .profile-card-grid.bottom,
+  .account-actions {
+    grid-template-columns: 1fr !important;
+  }
+  /* Marco legal: número + texto arriba, botón abajo (no se desborda) */
+  .law-list article { grid-template-columns: 34px minmax(0, 1fr); }
+  .law-list article button { grid-column: 1 / -1; justify-self: start; }
+}
+
+/* ═══ EQUIPO / SUPERVISIÓN — Tablero Constelar ═══
+   El panel destacado (visualización + detalle por página) apila en pantallas
+   angostas; las tarjetas KPI ya usan auto-fit y se reacomodan solas. */
+.constelar-featured { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+@media (max-width: 900px) {
+  .constelar-featured { grid-template-columns: 1fr; }
+}

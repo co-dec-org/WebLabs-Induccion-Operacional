@@ -274,7 +274,7 @@ export function SupervisionPage({ visualMode = 'boldo' }) {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 12, marginBottom: 12 }}>
+      <div className="constelar-featured" style={{ display: 'grid', gap: 12, marginBottom: 12 }}>
         <div style={{ background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(12,48,37,.16)', borderRadius: 12, padding: 12 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
             <div style={{ fontSize: 15, fontWeight: 600 }}>{sel.name}</div>
