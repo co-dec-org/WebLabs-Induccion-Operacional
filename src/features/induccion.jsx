@@ -1,18 +1,22 @@
 import React from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { modules } from '../data/modules.js';
 import { inductionMenu } from '../lib/uiConstants.js';
 
 // Escala la lámina de diseño (lienzo fijo 800×450) para que quepa exactamente
-// en su marco, sin deformar ni romper el contenido interno. Se recalcula cuando
-// el marco cambia de tamaño (viewport, orientación, layout).
+// en su contenedor, sin deformar ni romper el contenido interno. Devuelve un
+// callback ref reutilizable por el visor y el modo presentación (soporta el
+// montaje/desmontaje del overlay). Recalcula al cambiar el tamaño del marco.
 const SLIDE_W = 800;
 const SLIDE_H = 450;
-function useSlideScale() {
-  const frameRef = useRef(null);
-  useEffect(() => {
-    const el = frameRef.current;
-    if (!el) return undefined;
+function useSlideScaleRef() {
+  const cleanup = useRef(null);
+  return useCallback((el) => {
+    if (cleanup.current) {
+      cleanup.current();
+      cleanup.current = null;
+    }
+    if (!el) return;
     const apply = () => {
       const w = el.clientWidth;
       const h = el.clientHeight;
@@ -22,9 +26,8 @@ function useSlideScale() {
     apply();
     const observer = new ResizeObserver(apply);
     observer.observe(el);
-    return () => observer.disconnect();
+    cleanup.current = () => observer.disconnect();
   }, []);
-  return frameRef;
 }
 
 export function WebSlide({ module }) {
@@ -100,7 +103,8 @@ export function InduccionPage({ done, setDone }) {
   const [active, setActive] = useState(1);
   const [query, setQuery] = useState('');
   const [isPresentationOpen, setIsPresentationOpen] = useState(false);
-  const deckFrameRef = useSlideScale();
+  const deckFrameRef = useSlideScaleRef();
+  const presFrameRef = useSlideScaleRef();
 
   const activeModule = modules.find((module) => module.number === active) || modules[0];
   const filteredModules = useMemo(() => {
@@ -217,7 +221,7 @@ export function InduccionPage({ done, setDone }) {
             </div>
             <button onClick={() => setIsPresentationOpen(false)}>Salir</button>
           </header>
-          <figure>
+          <figure ref={presFrameRef}>
             <WebSlide module={activeModule} />
           </figure>
           <footer>

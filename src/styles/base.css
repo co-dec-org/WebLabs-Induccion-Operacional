@@ -598,6 +598,7 @@ blockquote {
   min-height: 0;
   place-items: center;
   margin: 0;
+  overflow: hidden;
 }
 .presentation-overlay img {
   max-width: 100%;
@@ -1590,12 +1591,6 @@ body {
   transform: scale(var(--deck-scale, 1));
   transform-origin: top left;
 }
-.slide-frame .web-slide h2 {
-  font-size: 46px;
-}
-.slide-frame .web-slide h3 {
-  font-size: 24px;
-}
 .web-slide {
   position: relative;
   width: 100%;
@@ -1633,12 +1628,14 @@ body {
 .web-slide h2 {
   margin: 28px 0 0;
   max-width: 78%;
-  font-size: clamp(34px, 5vw, 70px);
+  /* px fijos del lienzo 800×450: la lámina escala como bloque con --deck-scale,
+     por eso su tipografía NO usa vw (que rompía el contenido). */
+  font-size: 46px;
   line-height: 1.05;
 }
 .web-slide h3 {
   margin: 18px 0 0;
-  font-size: clamp(20px, 2.2vw, 30px);
+  font-size: 24px;
   font-weight: 500;
 }
 .gold-line {
@@ -1773,10 +1770,13 @@ body {
     radial-gradient(circle at 50% 55%, rgba(0, 91, 71, 0.42), transparent 34rem),
     linear-gradient(140deg, #002b22 0%, #00503f 100%);
 }
+/* Modo presentación: mismo lienzo 800×450 escalado con --deck-scale (JS), pero
+   centrado. Así la tipografía tampoco se rompe ni se encima en la portada. */
 .presentation-overlay figure .web-slide {
-  width: min(86vw, 1420px);
-  height: auto;
-  aspect-ratio: 16 / 9;
+  width: 800px;
+  height: 450px;
+  transform: scale(var(--deck-scale, 1));
+  transform-origin: center center;
   border-radius: 10px;
   box-shadow: 0 24px 80px rgba(0,0,0,.32);
 }
