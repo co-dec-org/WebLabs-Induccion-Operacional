@@ -15,10 +15,42 @@ export function AppShell({
 }) {
   const displayName = getUserDisplayName(user, profile);
   const role = getRole(profile);
+  const [navOpen, setNavOpen] = React.useState(false);
+  // El cajón se cierra solo al cambiar de ruta (navegación) o de dispositivo.
+  React.useEffect(() => {
+    setNavOpen(false);
+  }, [route, deviceType]);
 
   return (
-    <main className={`app-shell theme-${visualMode} route-${route.replace('/', '') || 'login'}`}>
-      <aside className="side-nav">
+    <main
+      className={`app-shell theme-${visualMode} route-${route.replace('/', '') || 'login'}${
+        navOpen ? ' nav-open' : ''
+      }`}
+    >
+      <button
+        type="button"
+        className="nav-toggle"
+        aria-label="Abrir menú de navegación"
+        aria-expanded={navOpen}
+        onClick={() => setNavOpen((open) => !open)}
+      >
+        <span aria-hidden="true">☰</span>
+      </button>
+      <div
+        className="nav-backdrop"
+        hidden={!navOpen}
+        aria-hidden="true"
+        onClick={() => setNavOpen(false)}
+      />
+      <aside className={`side-nav${navOpen ? ' open' : ''}`}>
+        <button
+          type="button"
+          className="nav-close"
+          aria-label="Cerrar menú"
+          onClick={() => setNavOpen(false)}
+        >
+          <span aria-hidden="true">✕</span>
+        </button>
         <div className="brand-block">
           <div className="crest" aria-hidden="true" />
           <div>
@@ -39,7 +71,14 @@ export function AppShell({
               <button
                 key={item.key}
                 className={`${route === item.path ? 'active' : ''}${isDisabled ? ' disabled-nav' : ''}`.trim()}
-                onClick={isDisabled ? undefined : () => navigate(item.path)}
+                onClick={
+                  isDisabled
+                    ? undefined
+                    : () => {
+                        navigate(item.path);
+                        setNavOpen(false);
+                      }
+                }
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
                 title={isDisabled ? disabledPageMessage[item.key] : undefined}
