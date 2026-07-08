@@ -304,6 +304,20 @@
   .welcome-panel { grid-template-columns: 44px minmax(0, 1fr); }
   .welcome-panel .panel-illustration { display: none; }
   .welcome-panel h3 { max-width: none; }
+
+  /* Header: envuelve en filas; el título toma su fila y el chip de usuario se
+     recorta con elipsis (evita que el nombre largo desborde). Aplica a todas
+     las páginas en teléfono. */
+  .top-bar { flex-wrap: wrap; row-gap: 8px; }
+  .top-bar > div:first-child { min-width: 0; flex: 1 1 100%; }
+  .top-actions { min-width: 0; }
+  .user-chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Resumen de Inicio: los chips de tipo de evidencia envuelven */
+  .evidence-summary > div { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* Footer legal: scrollea en horizontal en vez de desbordar/cortar */
+  .app-footer { justify-content: flex-start; overflow-x: auto; gap: 16px; padding-left: 12px; padding-right: 12px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -343,7 +357,9 @@
        (min-width: 701px) and (max-width: 1180px) and (orientation: portrait) {
   /* Contenido a ancho completo: el menú sale del flujo del grid */
   .app-shell { grid-template-columns: 1fr; }
-  .workspace { grid-column: 1 / -1; }
+  /* minmax(0,1fr): la columna del workspace NO debe crecer al max-content de un
+     hijo (evita desborde horizontal cuando algo interno es más ancho que la caja). */
+  .workspace { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr); }
 
   /* Menú fuera de pantalla; entra al abrir */
   .side-nav {
@@ -359,8 +375,9 @@
   .nav-toggle { display: inline-flex; }
   .nav-close { display: inline-flex; }
 
-  /* Dejar aire para el botón ☰ fijo en la esquina */
-  .top-bar { padding-left: 56px; }
+  /* Aire para el botón ☰ SOLO en el título (no en toda la barra), así los
+     controles usan el ancho completo cuando la barra envuelve en teléfono. */
+  .top-bar > div:first-child { padding-left: 46px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -462,6 +479,13 @@
   /* Marco legal: número + texto arriba, botón abajo (no se desborda) */
   .law-list article { grid-template-columns: 34px minmax(0, 1fr); }
   .law-list article button { grid-column: 1 / -1; justify-self: start; }
+
+  /* Perfil: la tarjeta principal pasa a 2 columnas (avatar + datos); el escudo
+     decorativo se oculta y el correo largo puede cortar, para no desbordar. */
+  .profile-card { grid-template-columns: 56px minmax(0, 1fr); }
+  .profile-shield { display: none; }
+  .profile-card p,
+  .profile-card h3 { overflow-wrap: anywhere; }
 }
 
 /* ═══ EQUIPO / SUPERVISIÓN — Tablero Constelar ═══
