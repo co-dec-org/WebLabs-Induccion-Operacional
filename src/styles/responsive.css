@@ -495,3 +495,6 @@
 @media (max-width: 900px) {
   .constelar-featured { grid-template-columns: 1fr; }
 }
+
+/* QA responsive teléfono (390px) verificado vía iframe: sin desborde horizontal
+   en las 8 páginas. */
